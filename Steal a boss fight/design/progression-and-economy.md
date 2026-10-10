@@ -9,6 +9,7 @@ tags: [design, economy, progression]
 ## Systems
 
 - **Money per second** from stands placed at your base.
+- **Boxing sandbags** to train power.
 - **Treadmill** to train speed (from Steal An Egg). Speed matters for chasing or carrying the [giant egg](big-egg.md) home, but carrying cancels speed upgrades.
 - **Base upgrades**: more stand slots.
 - **Stages**: each new stage is a different anime world with a harder boss.

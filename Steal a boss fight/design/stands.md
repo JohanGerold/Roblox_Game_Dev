@@ -14,9 +14,14 @@ Characters hatched from eggs. Inspired by stands from JoJo's Bizarre Adventure.
 - **Fight beside you automatically** during boss fights while you focus on dodging.
 - **Earn money per second** when placed at your base.
 
+## At your base
+
+- Stands **shadowbox** at your base (idle animation) while generating money.
+- **Upgrade** a stand to raise its money per second and its combat power.
+
 ## Rarities
 
-Common → Uncommon → Rare → Epic → Legendary → Mythic → Secret → God (exact list still to decide). The [giant egg](big-egg.md) has the best odds for the top tiers; [godly raids](raids-and-events.md) drop multiversal-tier characters.
+12 tiers from Common to Absolute, with auras from Mythic up and forms as separate characters. See [Rarities and Auras](rarities-and-auras.md). The [giant egg](big-egg.md) has the best odds for the top tiers; [godly raids](raids-and-events.md) drop multiversal-tier characters.
 
 ## Spectacle
 
