@@ -178,12 +178,13 @@ Giant-egg pickup uses a server-side ProximityPrompt (no remote).
 | Message | Purpose |
 |---|---|
 | `DataInit`, `DataChanged` | Player's own data copy |
-| `BossState` | HP, poise, state (Idle, Windup, Active, Recovery, Staggered, Dead) |
-| `BossAttack` | `attackId`, `impactTime` (server clock) for synced telegraphs |
+| `BossAttack` | `bossId`, `attackId`, `impactTime` (server clock) for synced telegraphs |
 | `HitResult` | Damage taken, parried, dodged, perfect dodge |
 | `DamageNumbers` (unreliable) | Floating numbers |
 | `GiantEggState` | Spawned, head start, carried by, dropped, delivered |
 | `Announce` | Text and rarity color |
+
+Boss HP, poise and state are not remotes: they replicate as attributes on the boss model (`Hp`, `MaxHp`, `Poise`, `MaxPoise`, `State`, `BossId`).
 
 Clock: both sides use `workspace:GetServerTimeNow()`.
 
@@ -191,7 +192,7 @@ Clock: both sides use `workspace:GetServerTimeNow()`.
 
 ### Boss AI (server)
 
-State machine: `Idle → Windup → Active → Recovery → Idle`, with `Staggered` (poise 0) and `Dead`. On Windup the server broadcasts `BossAttack(attackId, impactTime)`. At impact it finds players inside the attack's hitbox (simple shapes: sphere, box, cone) and judges each one.
+State machine: `Idle → Windup → Active → Recovery → Idle`, with `Staggered` (poise 0) and `Dead`. On Windup the server broadcasts `BossAttack(bossId, attackId, impactTime)`. At impact it snapshots the players inside the attack's hitbox (simple shapes: sphere, box, cone) and judges each one `judgeDelay` (0.30 s) later, so a defend claim pressed just before impact still arrives in time.
 
 ### Judging defense (server)
 

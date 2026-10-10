@@ -51,9 +51,14 @@ return {
 		local S = require(mods.Shared.NetSchema)
 		for _, name in { "Attack", "UseAbility", "Defend", "Counter", "HatchEgg", "PlaceStand", "SetTeam", "UpgradeStand",
 			"BuyWeapon", "Equip", "Train", "Rebirth", "SetKeybinds", "SetSetting", "RequestData",
-			"DataInit", "DataChanged", "BossState", "BossAttack", "HitResult", "DamageNumbers", "GiantEggState", "Announce" } do
+			"DataInit", "DataChanged", "BossAttack", "HitResult", "DamageNumbers", "GiantEggState", "Announce" } do
 			expect.truthy(S.definitions[name], name)
 		end
+	end,
+	["boss state travels as attributes, attacks carry the boss id"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq(S.definitions.BossState, nil)
+		expect.eq(#S.definitions.BossAttack.args, 3)
 	end,
 	["limiter allows up to max then blocks"] = function(expect, mods)
 		local L = require(mods.Shared.Util.RateLimiter).new(3, 1)

@@ -26,8 +26,7 @@ NetSchema.definitions = {
 	-- server -> client (not validated; the server is trusted)
 	DataInit = { dir = "s2c", args = { "table" } },
 	DataChanged = { dir = "s2c", args = { "string", "any" } },
-	BossState = { dir = "s2c", args = { "table" } },
-	BossAttack = { dir = "s2c", args = { "string", "number" } },
+	BossAttack = { dir = "s2c", args = { "string", "string", "number" } },
 	HitResult = { dir = "s2c", args = { "table" } },
 	DamageNumbers = { dir = "s2c", args = { "table" }, unreliable = true },
 	GiantEggState = { dir = "s2c", args = { "table" } },
