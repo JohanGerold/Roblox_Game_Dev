@@ -37,7 +37,7 @@ function StudioTestController:Start()
 		end
 	end)
 
-	-- FireRemote = "Name|arg1|arg2": sends that client->server message (numeric args become numbers),
+	-- FireRemote = "Name|arg1|arg2[#nonce]": sends that client->server message (numeric args become numbers),
 	-- then clears itself. The server still validates everything.
 	player:GetAttributeChangedSignal("FireRemote"):Connect(function()
 		local text = player:GetAttribute("FireRemote")
@@ -45,6 +45,7 @@ function StudioTestController:Start()
 			return
 		end
 		player:SetAttribute("FireRemote", nil)
+		text = text:gsub("#.*$", "") -- "#nonce" suffix lets a test resend an identical message
 		local parts = string.split(text, "|")
 		local name = table.remove(parts, 1)
 		for i, part in parts do
