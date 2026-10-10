@@ -59,6 +59,25 @@ return {
 			end
 		end
 	end,
+	["every egg has a display name"] = function(expect, mods)
+		for id, egg in cfg(mods, "Eggs") do
+			expect.truthy(type(egg.displayName) == "string" and #egg.displayName > 0, id)
+		end
+	end,
+	["stage boss rank eggs exist and top count is 3"] = function(expect, mods)
+		local E = cfg(mods, "Eggs")
+		for id, boss in cfg(mods, "Bosses") do
+			if boss.kind == "Stage" then
+				expect.truthy(boss.rankEggs, id .. " has no rankEggs")
+				expect.truthy(E[boss.rankEggs.top], id .. " top egg missing")
+				expect.truthy(E[boss.rankEggs.normal], id .. " normal egg missing")
+				expect.eq(boss.rankEggs.topCount, 3)
+			end
+		end
+	end,
+	["egg cap is 50"] = function(expect, mods)
+		expect.eq(cfg(mods, "Economy").eggCap, 50)
+	end,
 	["every boss has 1 to 4 player moves"] = function(expect, mods)
 		for id, boss in cfg(mods, "Bosses") do
 			expect.truthy(#boss.playerMoves >= 1 and #boss.playerMoves <= 4, id)

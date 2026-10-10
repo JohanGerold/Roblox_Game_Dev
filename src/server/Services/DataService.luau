@@ -15,6 +15,7 @@ local STORE_NAME = RunService:IsStudio() and "PlayerData_Dev" or "PlayerData_Liv
 
 local DataService = {}
 DataService.Loaded = Signal.new() -- Fire(player) once a player's data is ready
+DataService.Changed = Signal.new() -- Fire(player, key, value) after every Update
 
 local store = ProfileStore.New(STORE_NAME, DataTemplate.new())
 local profiles: { [Player]: any } = {}
@@ -35,6 +36,7 @@ function DataService:Update(player: Player, key: string, fn: (any) -> any): bool
 	local value = fn(profile.Data[key])
 	profile.Data[key] = value
 	dataChanged:Fire(player, key, value)
+	DataService.Changed:Fire(player, key, value)
 	return true
 end
 
@@ -100,6 +102,7 @@ function DataService:Start()
 	Players.PlayerRemoving:Connect(function(player)
 		local profile = profiles[player]
 		if profile then
+			profile.Data.lastSeen = os.time() -- for offline earnings
 			profile:EndSession()
 		end
 	end)

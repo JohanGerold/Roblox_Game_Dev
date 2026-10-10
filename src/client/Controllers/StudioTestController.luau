@@ -1,5 +1,6 @@
 -- Studio-only test hooks so play-tests can drive combat without a human. Reads two player attributes
--- (set from MCP): AutoAttack (boolean) and AutoDefend ("Parry" | "Dodge"). Does nothing outside Studio.
+-- (set from MCP): AutoAttack (boolean), AutoDefend ("Parry" | "Dodge") and FireRemote ("Name|arg|arg").
+-- Does nothing outside Studio.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -34,6 +35,23 @@ function StudioTestController:Start()
 				CombatController:Attack()
 			end
 		end
+	end)
+
+	-- FireRemote = "Name|arg1|arg2[#nonce]": sends that client->server message (numeric args become numbers),
+	-- then clears itself. The server still validates everything.
+	player:GetAttributeChangedSignal("FireRemote"):Connect(function()
+		local text = player:GetAttribute("FireRemote")
+		if type(text) ~= "string" or text == "" then
+			return
+		end
+		player:SetAttribute("FireRemote", nil)
+		text = text:gsub("#.*$", "") -- "#nonce" suffix lets a test resend an identical message
+		local parts = string.split(text, "|")
+		local name = table.remove(parts, 1)
+		for i, part in parts do
+			parts[i] = tonumber(part) or part
+		end
+		Net.Client(name):Fire(table.unpack(parts))
 	end)
 
 	Net.Client("BossAttack"):On(function(bossId, attackId, impactTime)
