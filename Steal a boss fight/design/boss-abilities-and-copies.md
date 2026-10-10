@@ -14,18 +14,13 @@ Why: playing *as* the boss needs a separate character rig, animation set and cam
 
 ## How copies drop
 
-- Every boss kill has a chance to drop a copy of that boss.
-- Repeatable: farm the same boss for more copies.
+- Each **normal stage boss** kill has a **low chance** to drop a copy of its moveset (and a **medium chance** to drop armor/clothing, see [Weapons and Gear](weapons-and-gear.md)).
+- **Each copy unlocks one new move** of that boss. Repeatable: farm the same boss for more.
+- Raid bosses drop godly characters; see [Raids and Events](raids-and-events.md).
 
-## Unlock ladder (draft numbers)
+## Unlock ladder (updated 2026-10-10)
 
-| Copies | Unlock |
-|---|---|
-| 1 | Passive (e.g. +10% damage, small aura) |
-| 3 | Skill 1 |
-| 10 | Skill 2 |
-| 25 | Ultimate |
-| 50 | Full mastery: the boss's outfit/aura on your avatar + server announcement |
+One move per copy, e.g. copy 1 → move 1, copy 2 → move 2, … until the full moveset. Full moveset can add the boss's aura on your avatar and a server announcement. Exact number of moves per boss is set per boss.
 
 Full mastery keeps the "I became the villain" fantasy for YouTube without the cost of a playable boss.
 

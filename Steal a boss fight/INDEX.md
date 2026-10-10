@@ -16,7 +16,8 @@ Start with [Game Concept](design/game-concept.md), then [V1 Scope and Build Orde
 - [The Big Egg](design/big-egg.md): the steal mechanic and how it avoids power creep
 - [Stands](design/stands.md): hatched characters that fight for you and earn income
 - [Boss Abilities and Copies](design/boss-abilities-and-copies.md): how duplicate boss drops unlock skills
-- [Combat](design/combat.md): dodge now, parry later, and why
+- [Combat](design/combat.md): fighting alongside stands, dodge i-frames, parry and poise break
+- [Weapons and Gear](design/weapons-and-gear.md): bought weapons, boss armor and moveset drops
 - [Progression and Economy](design/progression-and-economy.md): treadmill, rebirth, day/night, big numbers
 - [Raids and Events](design/raids-and-events.md): 45-minute godly raids, admin events
 - [Spectacle and YouTube](design/spectacle-and-youtube.md): the design rule that drives everything

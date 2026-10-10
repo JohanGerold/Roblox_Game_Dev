@@ -16,7 +16,7 @@ Make one stage feel great and get testers coming back. Everything else stacks on
 |---|---|---|
 | One huge boss with big effects | 1 stage, 1 boss | More stages / anime worlds |
 | Normal eggs + giant stealable egg | About 6 hatchable characters | Godly raids every 45 min |
-| Copies unlock boss abilities | Stands auto-fight; one generous dodge | Parry, perfect-dodge |
+| Copies unlock boss moves; dodge (i-frames + counter), parry + poise break | Stands auto-fight; punch/kick + a few placeholder weapons | More weapons, raids |
 | Big numbers, money per second | Treadmill + simple rebirth | Day/night, PvP arena |
 | Saving progress | | Monetization (added last) |
 

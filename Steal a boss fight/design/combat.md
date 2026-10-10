@@ -1,32 +1,39 @@
 ---
 title: Combat
-date: 2026-10-09
+date: 2026-10-10
 tags: [design, combat]
 ---
 
 # Combat
 
-## Vision
+You fight **alongside** your [stands](stands.md): they auto-fight the boss while you attack, dodge and parry.
 
-- Stands fight for you; you dodge, parry and use boss abilities.
-- Dodge inspired by Wuthering Waves (perfect-dodge feel), parry inspired by Sekiro.
+## Your attacks
 
-## Reality check
+- **Start:** a basic punch-and-kick combo.
+- **Weapons** bought with money: from a stick up to OP anime weapons, physical and magical. See [Weapons and Gear](weapons-and-gear.md). Each weapon has its own moveset, so a player with bad drop luck still has strong options.
+- **Boss moves** unlocked from boss moveset drops, one move per copy. See [Boss Abilities and Copies](boss-abilities-and-copies.md).
 
-- Most Roblox players are kids on phones.
-- Network lag makes tight timing windows feel unfair; good parry needs client-side prediction with server validation. That's weeks of work for one mechanic, and hard for a first project.
+## Dodge (Wuthering Waves style)
 
-## Plan
+- Dodging gives **i-frames** (brief invulnerability).
+- A **perfect dodge** (dodging right as an attack lands) triggers a **cool counter move** that does moderate damage. This rewards dodging instead of tanking.
 
-| Phase | Combat |
-|---|---|
-| V1 | Stands auto-fight. Player has **one dodge with a generous window** and equipped boss abilities. |
-| Later | Perfect-dodge bonus (slow-mo, counter) in the Wuthering Waves style. |
-| Later | Sekiro-style parry. |
-| Later | PvP arena. |
+## Parry (Sekiro style)
 
-## Server authority
+- Parrying attacks builds **poise damage** on the boss.
+- When poise breaks, the boss enters a **vulnerable state**:
+  - it stops attacking and kneels on one leg,
+  - it takes **2× damage**,
+  - it won't attack until it recovers.
+- **Recovery time:** normal bosses medium, raid bosses quick.
 
-The server decides damage, drops and who holds the [giant egg](big-egg.md). The client only sends inputs and shows effects. Exploiters target these games heavily.
+## Netcode reality
 
-Related: [Boss Abilities and Copies](boss-abilities-and-copies.md), [Stands](stands.md), [V1 Scope and Build Order](../planning/v1-scope.md)
+Most players are on phones and have lag. Tight timing windows feel unfair over the network, so dodge and parry windows are judged on the player's own client and the server checks they're plausible (timing and distance) before applying results. See the architecture spec for details.
+
+## Later
+
+- PvP (planned after launch).
+
+Related: [Weapons and Gear](weapons-and-gear.md), [Boss Abilities and Copies](boss-abilities-and-copies.md), [Raids and Events](raids-and-events.md), [Decisions Log](../planning/decisions.md)
