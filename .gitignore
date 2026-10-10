@@ -1,0 +1,10 @@
+# Place files (the map lives in Studio / Roblox cloud, code lives in src/)
+/*.rbxl
+/*.rbxlx
+/*.rbxl.lock
+/*.rbxlx.lock
+
+sourcemap.json
+
+# Obsidian per-machine state
+Steal a boss fight/.obsidian/workspace.json
