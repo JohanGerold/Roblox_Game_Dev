@@ -11,6 +11,7 @@ tags: [design, events, live-ops]
 - Every **45 minutes**, a raid boss spawns.
 - Raid bosses are **major anime villains**, close to impossible 1-on-1 unless you spend heavily. They're a **server-wide fight for about 16 players**.
 - Raid bosses recover quickly from poise break (see [Combat](combat.md)).
+- **Must be defeated** for any reward; if it survives, nobody gets anything.
 - Drops **godly / multiversal-tier characters** (inspired by characters like Yhwach, Rimuru, Anos, Zeno, with changed names).
 - Server-wide countdown and announcement so players stay online and YouTubers can plan videos around it.
 

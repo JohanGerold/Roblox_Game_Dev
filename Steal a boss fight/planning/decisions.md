@@ -75,4 +75,26 @@ tags: [planning, decisions]
 
 - **Decision (2026-10-10):** treadmill = speed, sandbags = power; stands shadowbox at base to earn and can be upgraded for more money and power.
 
+## 16. Offline earnings in V1
+
+- **Decision (2026-10-10):** players earn money while offline: money/s × time away, capped (~8 h) at a reduced rate (~50%). Return reason for players who play after school/college.
+
+## 17. Rebindable controls and combat mode
+
+- **Decision (2026-10-10):** every action rebindable (keyboard, mouse, controller), saved in player data; movable phone buttons. Defaults: left-click attack, right-click parry, Left Shift dodge, 1–4 abilities, **Ctrl toggles combat mode** (cursor locked + camera follows mouse) vs cursor mode (free cursor for UI). Roblox Shift Lock disabled.
+- **Tested 2026-10-10:** Roblox does not detect mouse side buttons (Mouse 4/5). Workaround: remap the side button to a key in mouse software.
+
+## 18. Rank-based personal eggs
+
+- **Decision (2026-10-10):** after a boss dies, participants are ranked by damage (including their stands). **Ranks 1–3** get an egg that rolls **Mythic or higher**; **rank 4 to last** get an egg that rolls **Legendary or lower**. Minimum damage share required to count as a participant.
+- Mythic must stay common within the top egg and higher tiers very rare, or Mythic+ inflates. The giant egg remains every player's chance at top tiers regardless of rank.
+
+## 19. Stand team: 3 slots, more by rebirth
+
+- **Decision (2026-10-10):** up to 3 stands fight beside you; rebirth unlocks more slots. Server computes stand damage; stands are drawn on each client and can't be hit.
+
+## 20. Raid rewards only on kill
+
+- **Decision (2026-10-10):** if the raid boss isn't defeated, nobody gets any reward.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)

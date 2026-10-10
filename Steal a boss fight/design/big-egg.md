@@ -13,6 +13,12 @@ The steal mechanic, and the game's link to the "Steal a…" genre.
 
 If the boss itself dropped one stealable prize, the strongest player would win it every time (power creep). Instead:
 
+## Personal eggs by damage rank
+
+- Ranks 1–3 by damage: egg rolls **Mythic or higher**.
+- Rank 4 to last: egg rolls **Legendary or lower**.
+- Must deal a minimum share of damage to count.
+
 ## Rules
 
 - **Every player who fought gets a normal egg.** It is personal and **cannot be stolen**. Nobody leaves a boss fight with nothing, so new players aren't discouraged.

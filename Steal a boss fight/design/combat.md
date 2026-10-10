@@ -28,6 +28,13 @@ You fight **alongside** your [stands](stands.md): they auto-fight the boss while
   - it won't attack until it recovers.
 - **Recovery time:** normal bosses medium, raid bosses quick.
 
+## Controls
+
+- All actions rebindable (keyboard, mouse, controller); saved per player; movable phone buttons.
+- Defaults: left-click attack, right-click parry, Left Shift dodge, 1–4 abilities.
+- **Ctrl toggles combat mode** (cursor hidden and locked, camera follows mouse) and cursor mode (free cursor for shop/UI).
+- Mouse side buttons aren't detected by Roblox (tested 2026-10-10); remap them to a key in mouse software.
+
 ## Netcode reality
 
 Most players are on phones and have lag. Tight timing windows feel unfair over the network, so dodge and parry windows are judged on the player's own client and the server checks they're plausible (timing and distance) before applying results. See the architecture spec for details.

@@ -14,6 +14,7 @@ tags: [design, economy, progression]
 - **Base upgrades**: more stand slots.
 - **Stages**: each new stage is a different anime world with a harder boss.
 - **Rebirth**: reset for permanent bonuses; also unlocks extra boss-ability slots (see [Boss Abilities and Copies](boss-abilities-and-copies.md)).
+- **Offline earnings (V1)**: money/s × time away, capped about 8 h, about 50% rate.
 - **Day/night cycle**: planned. Ideas still open (night-only bosses? stronger drops at night?).
 
 ## Big numbers
