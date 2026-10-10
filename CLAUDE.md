@@ -91,7 +91,7 @@ sync to Studio: rojo serve      (then Studio: Plugins → Rojo → Connect)
 
 ## Status
 
-- **Done:** design vault; Rojo + git (2026-10-10); architecture spec approved; plan 1 (core framework, build step 3) built on branch `feat/core-framework`: test runner, number formatting, config modules, egg rolls, validated networking, boot, save template, saving with ProfileStore. 56 unit tests pass; save/restore play-tested; final review fixes applied.
-- **Next:** merge `feat/core-framework` into `main` (user decides), then write plan 2 (build step 4: graybox map via MCP) with Opus medium, then build it with Sonnet medium.
+- **Done:** design vault; Rojo + git (2026-10-10); architecture spec approved; plan 1 (core framework, build step 3) merged into `main`; plan 2 (build step 4: graybox map + BaseService) built on branch `feat/graybox-map`: `Config/Map`, `MapLayout`, `MapContract` checker, `tools/BuildGraybox.luau` (rebuilds `Workspace.Map` via MCP `execute_luau`, never in Rojo), `BaseService` (assign, spawn at base, release). 71 unit tests pass; play-tested base assignment, sign and respawn.
+- **Next:** user saves the place in Studio (the map only lives in the place file) and merges `feat/graybox-map` into `main`; then write plan 3 (build step 5: combat core) with Opus medium, build with Sonnet high.
 - **Known deferred minors** (from the final review): handler-less remotes unvalidated, Format.number(nil), Loaded-before-DataInit order, loadPlayer pcall, version downgrade, Net small leaks, Update key/NaN checks, DataService boot failure not kicking.
 - **Gotchas:** never delete a folder Rojo watches (crashes Rojo 7.7.1: restart `rojo serve`, user reconnects the plugin); MCP `execute_luau` runs in a separate Lua environment from game scripts, so test game services with temporary Scripts parented at runtime during play; Studio instance id changes when Studio restarts (`list_roblox_studios`).
