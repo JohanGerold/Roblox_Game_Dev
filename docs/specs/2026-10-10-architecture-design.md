@@ -178,12 +178,13 @@ Giant-egg pickup uses a server-side ProximityPrompt (no remote).
 | Message | Purpose |
 |---|---|
 | `DataInit`, `DataChanged` | Player's own data copy |
-| `BossState` | HP, poise, state (Idle, Windup, Active, Recovery, Staggered, Dead) |
-| `BossAttack` | `attackId`, `impactTime` (server clock) for synced telegraphs |
+| `BossAttack` | `bossId`, `attackId`, `impactTime` (server clock) for synced telegraphs |
 | `HitResult` | Damage taken, parried, dodged, perfect dodge |
 | `DamageNumbers` (unreliable) | Floating numbers |
 | `GiantEggState` | Spawned, head start, carried by, dropped, delivered |
 | `Announce` | Text and rarity color |
+
+Boss HP, poise and state are not remotes: they replicate as attributes on the boss model (`Hp`, `MaxHp`, `Poise`, `MaxPoise`, `State`, `BossId`).
 
 Clock: both sides use `workspace:GetServerTimeNow()`.
 
@@ -191,7 +192,7 @@ Clock: both sides use `workspace:GetServerTimeNow()`.
 
 ### Boss AI (server)
 
-State machine: `Idle → Windup → Active → Recovery → Idle`, with `Staggered` (poise 0) and `Dead`. On Windup the server broadcasts `BossAttack(attackId, impactTime)`. At impact it finds players inside the attack's hitbox (simple shapes: sphere, box, cone) and judges each one.
+State machine: `Idle → Windup → Active → Recovery → Idle`, with `Staggered` (poise 0) and `Dead`. On Windup the server broadcasts `BossAttack(bossId, attackId, impactTime)`. At impact it snapshots the players inside the attack's hitbox (simple shapes: sphere, box, cone) and judges each one `judgeDelay` (0.30 s) later, so a defend claim pressed just before impact still arrives in time.
 
 ### Judging defense (server)
 
@@ -263,7 +264,8 @@ Your stand team is drawn on clients by StandController. StandService ticks damag
 - Defaults: left-click attack, right-click parry, Left Shift dodge, 1–4 abilities, E interact, Ctrl combat mode.
 - Mouse side buttons are not detected by Roblox (tested 2026-10-10). Players remap them to keys in mouse software.
 - Phones: on-screen buttons, movable and saved.
-- Implementation checks Roblox's Input Action System first; falls back to UserInputService/ContextActionService if it doesn't fit.
+- Implementation uses ContextActionService (the fallback below): it gives phone touch buttons and gamepad support without extra UI. Roblox's Input Action System can be revisited during polish (build step 12).
+- Counter has no key of its own: pressing Attack while the counter window is open sends `Counter` instead of `Attack`.
 
 ## 14. Effects and performance
 
