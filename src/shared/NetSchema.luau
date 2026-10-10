@@ -22,6 +22,7 @@ NetSchema.definitions = {
 	Rebirth = { dir = "c2s", args = {} },
 	SetKeybinds = { dir = "c2s", args = { "table" } },
 	SetSetting = { dir = "c2s", args = { "string", "any" } },
+	RequestData = { dir = "c2s", args = {} },
 	-- server -> client (not validated; the server is trusted)
 	DataInit = { dir = "s2c", args = { "table" } },
 	DataChanged = { dir = "s2c", args = { "string", "any" } },

@@ -50,7 +50,7 @@ return {
 	["every spec message is defined"] = function(expect, mods)
 		local S = require(mods.Shared.NetSchema)
 		for _, name in { "Attack", "UseAbility", "Defend", "Counter", "HatchEgg", "PlaceStand", "SetTeam", "UpgradeStand",
-			"BuyWeapon", "Equip", "Train", "Rebirth", "SetKeybinds", "SetSetting",
+			"BuyWeapon", "Equip", "Train", "Rebirth", "SetKeybinds", "SetSetting", "RequestData",
 			"DataInit", "DataChanged", "BossState", "BossAttack", "HitResult", "DamageNumbers", "GiantEggState", "Announce" } do
 			expect.truthy(S.definitions[name], name)
 		end
