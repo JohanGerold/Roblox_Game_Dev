@@ -1,0 +1,167 @@
+-- Server side of combat: validates player attacks, defend claims and counters, judges boss impacts
+-- against each victim's claims, and applies damage in both directions (spec section 8).
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+
+local Armor = require(ReplicatedStorage.Shared.Config.Armor)
+local Combat = require(ReplicatedStorage.Shared.Config.Combat)
+local Progression = require(ReplicatedStorage.Shared.Config.Progression)
+local Weapons = require(ReplicatedStorage.Shared.Config.Weapons)
+local Net = require(ReplicatedStorage.Shared.Net)
+local Logic = script.Parent.Parent.Logic
+local ComboCheck = require(Logic.ComboCheck)
+local DamageCalc = require(Logic.DamageCalc)
+local DefenseJudge = require(Logic.DefenseJudge)
+local BossService = require(script.Parent.BossService)
+local DataService = require(script.Parent.DataService)
+
+local CombatService = {}
+
+local histories: { [Player]: any } = {}
+local combos: { [Player]: any } = {}
+local counterUntil: { [Player]: number } = {}
+
+local hitResult, damageNumbers
+
+local function now(): number
+	return workspace:GetServerTimeNow()
+end
+
+local function history(player: Player)
+	histories[player] = histories[player] or DefenseJudge.newHistory()
+	return histories[player]
+end
+
+local function aliveRoot(player: Player): BasePart?
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if humanoid and humanoid.Health > 0 and root then
+		return root :: BasePart
+	end
+	return nil
+end
+
+-- Nearest living boss whose body surface is within `reach` studs of `position`.
+local function bossInReach(position: Vector3, reach: number)
+	local best, bestDist
+	for _, boss in BossService:GetBosses() do
+		if boss.brain.state ~= "Dead" then
+			local d = BossService:DistanceToBody(boss, position)
+			if d <= reach and (not bestDist or d < bestDist) then
+				best, bestDist = boss, d
+			end
+		end
+	end
+	return best
+end
+
+local function strike(player: Player, boss, baseDamage: number, data)
+	local staggered = BossService:IsStaggered(boss)
+	local amount = DamageCalc.playerDamage(baseDamage, {
+		power = data.training.power,
+		rebirths = data.rebirths,
+		armorBonus = DamageCalc.armorBonus(data.armor.equipped, Armor),
+		staggered = staggered,
+	}, Combat, Progression)
+	local dealt = BossService:DamageBoss(boss, player, amount)
+	if dealt > 0 then
+		local p = boss.pos
+		damageNumbers:Fire(player, { amount = dealt, x = p.X, y = p.Y + 6, z = p.Z, staggered = staggered })
+	end
+end
+
+local function onAttack(player: Player, comboIndex: number, weaponId: string)
+	local data = DataService:Get(player)
+	local root = aliveRoot(player)
+	if not data or not root or data.weapons.equipped ~= weaponId then
+		return
+	end
+	local weapon = Weapons[weaponId]
+	if not weapon then
+		return
+	end
+	combos[player] = combos[player] or ComboCheck.newState()
+	if not ComboCheck.accept(combos[player], comboIndex, weapon.combo, now(), Combat) then
+		return
+	end
+	local hit = weapon.combo[comboIndex]
+	local boss = bossInReach(root.Position, hit.range + Combat.rangeTolerance)
+	if boss then
+		strike(player, boss, hit.damage, data)
+	end
+end
+
+local function onDefend(player: Player, kind: string, pressTime: number)
+	DefenseJudge.accept(history(player), kind, pressTime, now(), Combat)
+end
+
+local function onCounter(player: Player)
+	local data = DataService:Get(player)
+	local root = aliveRoot(player)
+	local until_ = counterUntil[player]
+	if not data or not root or not until_ or now() > until_ then
+		return
+	end
+	local boss = bossInReach(root.Position, Combat.counterRange)
+	if not boss then
+		return
+	end
+	counterUntil[player] = nil
+	strike(player, boss, Combat.counterDamage, data)
+end
+
+local function judgeVictim(boss, attack, player: Player, impactTime: number)
+	local root = aliveRoot(player)
+	if not root or player.Parent ~= Players then
+		return
+	end
+	local result = DefenseJudge.judge(history(player), impactTime, attack.unparryable, Combat)
+	local taken = 0
+	if result == "Parried" then
+		if attack.poiseOnParry > 0 then
+			BossService:Parry(boss, attack.poiseOnParry)
+		end
+	elseif result == "PerfectDodge" then
+		counterUntil[player] = now() + Combat.counterWindow
+	elseif result == "Hit" then
+		taken = attack.damage
+		local humanoid = root.Parent:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid:TakeDamage(attack.damage)
+		end
+	end
+	hitResult:Fire(player, { result = result, damage = taken, attackId = attack.id })
+end
+
+function CombatService:Init()
+	StarterPlayer.EnableMouseLockOption = false
+	hitResult = Net.Server("HitResult")
+	damageNumbers = Net.Server("DamageNumbers")
+end
+
+function CombatService:Start()
+	Net.Server("Attack"):On(onAttack)
+	Net.Server("Defend"):On(onDefend)
+	Net.Server("Counter"):On(onCounter)
+
+	BossService.Impact:Connect(function(boss, attack, victims, impactTime)
+		task.delay(Combat.judgeDelay, function()
+			for _, player in victims do
+				local ok, err = xpcall(judgeVictim, debug.traceback, boss, attack, player, impactTime)
+				if not ok then
+					warn("[CombatService] " .. tostring(err))
+				end
+			end
+		end)
+	end)
+
+	Players.PlayerRemoving:Connect(function(player)
+		histories[player] = nil
+		combos[player] = nil
+		counterUntil[player] = nil
+	end)
+end
+
+return CombatService
