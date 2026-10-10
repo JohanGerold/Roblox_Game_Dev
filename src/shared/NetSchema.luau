@@ -31,6 +31,9 @@ NetSchema.definitions = {
 	DamageNumbers = { dir = "s2c", args = { "table" }, unreliable = true },
 	GiantEggState = { dir = "s2c", args = { "table" } },
 	Announce = { dir = "s2c", args = { "string", "string" } },
+	Hatched = { dir = "s2c", args = { "table" } }, -- { uid, id }
+	Notice = { dir = "s2c", args = { "string" } }, -- personal toast
+	Welcome = { dir = "s2c", args = { "table" } }, -- { seconds, amount } offline earnings
 }
 
 NetSchema.defaultRate = 4

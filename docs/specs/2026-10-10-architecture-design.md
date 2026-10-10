@@ -182,7 +182,10 @@ Giant-egg pickup uses a server-side ProximityPrompt (no remote).
 | `HitResult` | Damage taken, parried, dodged, perfect dodge |
 | `DamageNumbers` (unreliable) | Floating numbers |
 | `GiantEggState` | Spawned, head start, carried by, dropped, delivered |
-| `Announce` | Text and rarity color |
+| `Announce` | Text and rarity color (server-wide) |
+| `Hatched` | `{ uid, id }`: the new stand, for the reveal |
+| `Notice` | Personal toast text (errors, rank egg received) |
+| `Welcome` | `{ seconds, amount }`: offline earnings popup |
 
 Boss HP, poise and state are not remotes: they replicate as attributes on the boss model (`Hp`, `MaxHp`, `Poise`, `MaxPoise`, `State`, `BossId`).
 
@@ -245,6 +248,7 @@ Your stand team is drawn on clients by StandController. StandService ticks damag
 
 ## 11. Eggs, hatching and stands
 
+- Egg storage holds at most 50 eggs (`Economy.eggCap`); a boss kill with full storage grants nothing and sends a `Notice`. New stands are placed in the lowest free unlocked base slot, else go to storage. Times (`readyAt`, `lastSeen`) are unix seconds from `os.time()`.
 - Eggs live in player data with `readyAt`. When ready, `HatchEgg` makes the server roll rarity, then character, from the egg's odds and add a new character entry.
 - Mythic+ hatches trigger a server-wide announcement. The UI shows each egg's odds.
 - Placed stands spawn on their base's `StandSlot`s and play a shadowbox idle.
