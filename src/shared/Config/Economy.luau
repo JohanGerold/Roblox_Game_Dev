@@ -5,7 +5,9 @@ return {
 	eggCap = 50,
 	startingBaseSlots = 4,
 	maxBaseSlots = 16,
-	standUpgradeBaseCost = 100,
+	standUpgradeCostSeconds = 100, -- first upgrade costs this many seconds of the stand's income
+	standMaxLevel = 50,
+	lastSeenStampSeconds = 60,
 	standUpgradeCostGrowth = 1.6,
 	standLevelIncomeGrowth = 1.35,
 	standLevelPowerGrowth = 1.3,
