@@ -11,6 +11,8 @@ local Net = require(ReplicatedStorage.Shared.Net)
 local Signal = require(ReplicatedStorage.Shared.Util.Signal)
 local Logic = script.Parent.Parent.Logic
 local BossBrain = require(Logic.BossBrain)
+local ArenaCheck = require(Logic.ArenaCheck)
+local Combat = require(ReplicatedStorage.Shared.Config.Combat)
 local Hitbox = require(Logic.Hitbox)
 
 local ATTRIBUTE_INTERVAL = 0.1
@@ -128,13 +130,13 @@ local function resetBoss(rec)
 	setAttributes(rec)
 end
 
-local function livingPlayersInArena(rec): { { player: Player, root: BasePart } }
+local function livingPlayers(): { { player: Player, root: BasePart } }
 	local found = {}
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		local root = character and character:FindFirstChild("HumanoidRootPart")
-		if humanoid and root and humanoid.Health > 0 and (flat(root.Position) - flat(rec.center)).Magnitude <= Map.arenaRadius then
+		if humanoid and root and humanoid.Health > 0 then
 			table.insert(found, { player = player, root = root })
 		end
 	end
@@ -163,11 +165,13 @@ local function step(rec, dt: number)
 	end
 
 	-- nearest living player in the arena is the target
-	local candidates = livingPlayersInArena(rec)
+	-- Only players inside the arena are chased, but an impact hits everyone in its hitbox, so
+	-- standing on or past the wall is no shelter.
+	local candidates = livingPlayers()
 	local target, targetDist
 	for _, c in candidates do
 		local d = (flat(c.root.Position) - flat(rec.pos)).Magnitude
-		if not targetDist or d < targetDist then
+		if ArenaCheck.inside(rec.center, Map.arenaRadius, c.root.Position, 0) and (not targetDist or d < targetDist) then
 			target, targetDist = c, d
 		end
 	end
@@ -281,6 +285,10 @@ end
 function BossService:Parry(boss, poiseDamage: number)
 	BossBrain.applyParry(boss.brain, poiseDamage, now())
 	setAttributes(boss)
+end
+
+function BossService:IsInArena(boss, position: Vector3): boolean
+	return ArenaCheck.inside(boss.center, Map.arenaRadius, position, Combat.arenaTolerance)
 end
 
 -- Horizontal distance from a point to the boss's body surface (0 if inside).

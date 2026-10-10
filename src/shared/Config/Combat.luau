@@ -19,4 +19,5 @@ return {
 	claimHistorySize = 4,
 	dodgeDashSpeed = 60,
 	dodgeDashSeconds = 0.2,
+	arenaTolerance = 5,
 }

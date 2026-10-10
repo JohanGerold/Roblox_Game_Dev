@@ -43,11 +43,12 @@ local function aliveRoot(player: Player): BasePart?
 	return nil
 end
 
--- Nearest living boss whose body surface is within `reach` studs of `position`.
+-- Nearest living boss whose body surface is within `reach` studs of `position`; the player must be
+-- inside the boss's arena (plus a small tolerance), so the wall is no safe spot to attack from.
 local function bossInReach(position: Vector3, reach: number)
 	local best, bestDist
 	for _, boss in BossService:GetBosses() do
-		if boss.brain.state ~= "Dead" then
+		if boss.brain.state ~= "Dead" and BossService:IsInArena(boss, position) then
 			local d = BossService:DistanceToBody(boss, position)
 			if d <= reach and (not bestDist or d < bestDist) then
 				best, bestDist = boss, d

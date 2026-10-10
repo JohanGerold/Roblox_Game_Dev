@@ -14,11 +14,21 @@ return {
 			t += 0.45
 		end
 	end,
-	["skipping a combo step is rejected"] = function(expect, mods)
+	["one dropped hit does not desync the combo"] = function(expect, mods)
 		local CC, Combat, combo = load(mods)
 		local s = CC.newState()
 		expect.eq(CC.accept(s, 1, combo, 10, Combat), true)
-		expect.eq(CC.accept(s, 3, combo, 10.5, Combat), false)
+		expect.eq(CC.accept(s, 3, combo, 10.5, Combat), true, "hit 2 was lost on the way")
+	end,
+	["skipping two combo steps is rejected"] = function(expect, mods)
+		local CC, Combat = load(mods)
+		local combo = {
+			{ minInterval = 0.3 }, { minInterval = 0.3 }, { minInterval = 0.3 }, { minInterval = 0.3 },
+		}
+		local s = CC.newState()
+		expect.eq(CC.accept(s, 1, combo, 10, Combat), true)
+		expect.eq(CC.accept(s, 4, combo, 10.5, Combat), false)
+		expect.eq(CC.accept(s, 3, combo, 10.5, Combat), true)
 	end,
 	["attacking too fast is rejected"] = function(expect, mods)
 		local CC, Combat, combo = load(mods)

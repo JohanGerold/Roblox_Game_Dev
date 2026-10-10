@@ -15,7 +15,9 @@ function ComboCheck.accept(state, comboIndex: number, combo, now: number, Combat
 			return false
 		end
 	else
-		if comboIndex ~= state.lastIndex % #combo + 1 and comboIndex ~= 1 then
+		-- the next step, one step ahead (a hit lost to lag must not desync the combo), or a restart
+		local expected = state.lastIndex % #combo + 1
+		if comboIndex ~= expected and comboIndex ~= expected % #combo + 1 and comboIndex ~= 1 then
 			return false
 		end
 		if now - state.lastTime < combo[comboIndex].minInterval * Combat.attackIntervalTolerance then
