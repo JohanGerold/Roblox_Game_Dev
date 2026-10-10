@@ -22,7 +22,7 @@ Make one stage feel great and get testers coming back. Everything else stacks on
 
 ## Build order
 
-1. **Graybox**: 8 player bases, one arena, one boss with a simple attack, a player dodge.
+1. **Graybox**: 16 player bases, one arena, one boss with a simple attack, a player dodge.
 2. **Eggs**: boss dies → everyone gets an egg → hatch at base → stand earns money. Save data reliably.
 3. **Giant egg**: drop, pick up, carry rules, hit-to-drop, deliver to base.
 4. **Stands in combat**: hatched stand follows you and attacks the boss.

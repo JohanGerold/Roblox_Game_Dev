@@ -54,4 +54,9 @@ tags: [planning, decisions]
 
 - **Decision (2026-10-10):** major-villain raid bosses every 45 min, built for about 16 players.
 
+## 11. 16-player servers, raids in the same server
+
+- **Decision (2026-10-10):** every server holds 16 players with 16 bases; raids happen in that same server.
+- **Reasoning:** one place and one map, easy to test in Studio; no cross-server matchmaking or teleports.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)
