@@ -11,4 +11,12 @@ return {
 	rangeTolerance = 4,
 	minDamageShare = 0.05,
 	staggerDamageMultiplier = 2,
+	judgeDelay = 0.30,
+	comboResetSeconds = 1.0,
+	attackIntervalTolerance = 0.8,
+	powerDamageFactor = 0.01,
+	counterRange = 14,
+	claimHistorySize = 4,
+	dodgeDashSpeed = 60,
+	dodgeDashSeconds = 0.2,
 }
