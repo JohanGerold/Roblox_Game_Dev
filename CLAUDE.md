@@ -92,5 +92,6 @@ sync to Studio: rojo serve      (then Studio: Plugins → Rojo → Connect)
 ## Status
 
 - **Done:** design vault; Rojo + git set up and verified syncing into Studio (2026-10-10); architecture brainstorming (decisions 11–20 in the vault).
-- **In progress:** Step 1 — architecture spec written: `docs/specs/2026-10-10-architecture-design.md`, awaiting user review.
-- **Next:** user approves the spec → Step 2, implementation plan (writing-plans skill).
+- **Done:** Step 1, architecture spec approved (2026-10-10).
+- **In progress:** Step 2, implementation plan 1 of the series (core framework, build step 3): `docs/superpowers/plans/2026-10-10-core-framework.md`, awaiting user review.
+- **Next:** user approves plan → execute build step 3 (Sonnet high).
