@@ -109,4 +109,10 @@ return {
 		expect.eq(K.Dodge, "LeftShift")
 		expect.eq(K.ToggleCombatMode, "LeftControl")
 	end,
+	["giant egg config is consistent"] = function(expect, mods)
+		local G, E, R = cfg(mods, "GiantEgg"), cfg(mods, "Eggs"), cfg(mods, "Rarities")
+		expect.truthy(E[G.eggId], "egg " .. G.eggId)
+		expect.truthy(G.returnAfterSeconds < G.despawnAfterSeconds)
+		expect.truthy(R.byName[G.announceRarity], "announce rarity")
+	end,
 }
