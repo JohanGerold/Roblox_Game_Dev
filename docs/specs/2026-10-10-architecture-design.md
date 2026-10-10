@@ -95,6 +95,8 @@ Code finds map pieces through CollectionService tags, never by name or position:
 | `Base` (with attribute `BaseIndex` 1–16) | BaseService |
 | `StandSlot` (child of a base, attribute `SlotIndex`) | StandService |
 | `EggDeliveryPad` (child of a base) | GiantEggService |
+| `BaseSpawn` (child of a base, where the owner spawns) | BaseService |
+| `BaseSign` (child of a base, part with a SurfaceGui TextLabel showing the owner) | BaseService |
 | `BossArena` (attribute `StageId`) | BossService |
 | `BossSpawn`, `GiantEggSpawn` (inside arena) | BossService, GiantEggService |
 | `Treadmill`, `Sandbag` | ProgressionService |
