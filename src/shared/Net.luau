@@ -12,7 +12,7 @@ local Net = {}
 local FOLDER_NAME = "Remotes"
 local limiters: { [string]: any } = {}
 local lastWarn: { [string]: number } = {}
-local violations = RateLimiter.new(50, 10) -- 50 rejected calls in 10 s => kick
+local violations = RateLimiter.new(50, 10) -- 50 malformed calls in 10 s => kick (rate-limit drops never count: lag bursts are not abuse)
 
 local function remoteFolder(): Folder
 	if RunService:IsServer() then
@@ -40,14 +40,14 @@ function Net.InitServer()
 	end)
 end
 
-local function reject(player: Player, name: string, reason: string)
+local function reject(player: Player, name: string, reason: string, countsTowardKick: boolean)
 	local key = player.UserId .. ":" .. name
 	local now = os.clock()
 	if not lastWarn[key] or now - lastWarn[key] > 60 then
 		lastWarn[key] = now
 		warn(string.format("[Net] dropped %s from %s: %s", name, player.Name, reason))
 	end
-	if not violations:allow(player.UserId, now) then
+	if countsTowardKick and not violations:allow(player.UserId, now) then
 		player:Kick("Too many invalid requests.")
 	end
 end
@@ -63,12 +63,12 @@ function Net.Server(name: string)
 		limiters[name] = limiter
 		remote.OnServerEvent:Connect(function(player, ...)
 			if not limiter:allow(player.UserId, os.clock()) then
-				return reject(player, name, "rate limit")
+				return reject(player, name, "rate limit", false)
 			end
 			local args = table.pack(...)
 			local ok, reason = NetSchema.validate(name, args)
 			if not ok then
-				return reject(player, name, reason or "invalid")
+				return reject(player, name, reason or "invalid", true)
 			end
 			local success, err = xpcall(handler, debug.traceback, player, ...)
 			if not success then

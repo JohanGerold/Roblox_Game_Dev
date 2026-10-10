@@ -91,7 +91,7 @@ sync to Studio: rojo serve      (then Studio: Plugins → Rojo → Connect)
 
 ## Status
 
-- **Done:** design vault; Rojo + git set up and verified syncing into Studio (2026-10-10); architecture brainstorming (decisions 11–20 in the vault).
-- **Done:** Step 1, architecture spec approved (2026-10-10).
-- **In progress:** Step 2, implementation plan 1 of the series (core framework, build step 3): `docs/superpowers/plans/2026-10-10-core-framework.md`, awaiting user review.
-- **Next:** user approves plan → execute build step 3 (Sonnet high).
+- **Done:** design vault; Rojo + git (2026-10-10); architecture spec approved; plan 1 (core framework, build step 3) built on branch `feat/core-framework`: test runner, number formatting, config modules, egg rolls, validated networking, boot, save template, saving with ProfileStore. 56 unit tests pass; save/restore play-tested; final review fixes applied.
+- **Next:** merge `feat/core-framework` into `main` (user decides), then write plan 2 (build step 4: graybox map via MCP) with Opus medium, then build it with Sonnet medium.
+- **Known deferred minors** (from the final review): handler-less remotes unvalidated, Format.number(nil), Loaded-before-DataInit order, loadPlayer pcall, version downgrade, Net small leaks, Update key/NaN checks, DataService boot failure not kicking.
+- **Gotchas:** never delete a folder Rojo watches (crashes Rojo 7.7.1: restart `rojo serve`, user reconnects the plugin); MCP `execute_luau` runs in a separate Lua environment from game scripts, so test game services with temporary Scripts parented at runtime during play; Studio instance id changes when Studio restarts (`list_roblox_studios`).

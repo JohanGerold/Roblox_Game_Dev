@@ -8,17 +8,17 @@ local MAX_TABLE_ENTRIES = 64
 
 NetSchema.definitions = {
 	-- client -> server
-	Attack = { dir = "c2s", args = { "int", "string" }, rate = 10 },
-	UseAbility = { dir = "c2s", args = { "int" }, rate = 5 },
-	Defend = { dir = "c2s", args = { "string", "number" }, rate = 6 },
+	Attack = { dir = "c2s", args = { "int", "string" }, rate = 10, limits = { [1] = { min = 1, max = 10 } } },
+	UseAbility = { dir = "c2s", args = { "int" }, rate = 5, limits = { [1] = { min = 1, max = 4 } } },
+	Defend = { dir = "c2s", args = { "string", "number" }, rate = 6, limits = { [1] = { oneOf = { "Dodge", "Parry" } } } },
 	Counter = { dir = "c2s", args = {}, rate = 2 },
 	HatchEgg = { dir = "c2s", args = { "string" } },
-	PlaceStand = { dir = "c2s", args = { "string", "int?" } },
+	PlaceStand = { dir = "c2s", args = { "string", "int?" }, limits = { [2] = { min = 1, max = 16 } } },
 	SetTeam = { dir = "c2s", args = { "table" } },
 	UpgradeStand = { dir = "c2s", args = { "string" } },
 	BuyWeapon = { dir = "c2s", args = { "string" } },
-	Equip = { dir = "c2s", args = { "string", "string" } },
-	Train = { dir = "c2s", args = { "string", "boolean" } },
+	Equip = { dir = "c2s", args = { "string", "string" }, limits = { [1] = { oneOf = { "weapon", "armor" } } } },
+	Train = { dir = "c2s", args = { "string", "boolean" }, limits = { [1] = { oneOf = { "Treadmill", "Sandbag" } } } },
 	Rebirth = { dir = "c2s", args = {} },
 	SetKeybinds = { dir = "c2s", args = { "table" } },
 	SetSetting = { dir = "c2s", args = { "string", "any" } },
@@ -35,6 +35,20 @@ NetSchema.definitions = {
 }
 
 NetSchema.defaultRate = 4
+
+-- Optional per-argument limits: def.limits[argIndex] = { min?, max?, oneOf? }.
+local function withinLimits(limit, value): boolean
+	if limit.min and value < limit.min then
+		return false
+	end
+	if limit.max and value > limit.max then
+		return false
+	end
+	if limit.oneOf and not table.find(limit.oneOf, value) then
+		return false
+	end
+	return true
+end
 
 local function finite(v): boolean
 	return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge
@@ -96,6 +110,8 @@ function NetSchema.validate(name: string, args: { any }): (boolean, string?)
 			end
 		elseif not checkValue(base, value) then
 			return false, "bad argument " .. i
+		elseif def.limits and def.limits[i] and not withinLimits(def.limits[i], value) then
+			return false, "argument " .. i .. " out of range"
 		end
 	end
 	return true

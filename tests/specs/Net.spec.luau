@@ -75,4 +75,44 @@ return {
 		expect.eq(L:allow("b", 0), true)
 		expect.eq(L:allow("a", 0.1), false)
 	end,
+	["UseAbility slot must be 1 to 4"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		for _, ok in { 1, 4 } do
+			expect.eq((S.validate("UseAbility", { ok })), true, tostring(ok))
+		end
+		for _, bad in { 0, 5, -1, 1e300 } do
+			expect.eq((S.validate("UseAbility", { bad })), false, tostring(bad))
+		end
+	end,
+	["Attack combo index must be 1 to 10"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq((S.validate("Attack", { 10, "Fists" })), true)
+		expect.eq((S.validate("Attack", { 0, "Fists" })), false)
+		expect.eq((S.validate("Attack", { 11, "Fists" })), false)
+	end,
+	["Defend kind must be Dodge or Parry"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq((S.validate("Defend", { "Dodge", 12.5 })), true)
+		expect.eq((S.validate("Defend", { "Parry", 12.5 })), true)
+		expect.eq((S.validate("Defend", { "Block", 12.5 })), false)
+	end,
+	["Train kind must be Treadmill or Sandbag"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq((S.validate("Train", { "Treadmill", true })), true)
+		expect.eq((S.validate("Train", { "Sandbag", false })), true)
+		expect.eq((S.validate("Train", { "Swim", true })), false)
+	end,
+	["Equip kind must be weapon or armor"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq((S.validate("Equip", { "weapon", "Katana" })), true)
+		expect.eq((S.validate("Equip", { "armor", "Lofy_Hat" })), true)
+		expect.eq((S.validate("Equip", { "hat", "x" })), false)
+	end,
+	["PlaceStand slot must be 1 to 16 when given"] = function(expect, mods)
+		local S = require(mods.Shared.NetSchema)
+		expect.eq((S.validate("PlaceStand", { "c_1", 16 })), true)
+		expect.eq((S.validate("PlaceStand", { "c_1" })), true)
+		expect.eq((S.validate("PlaceStand", { "c_1", 0 })), false)
+		expect.eq((S.validate("PlaceStand", { "c_1", 17 })), false)
+	end,
 }

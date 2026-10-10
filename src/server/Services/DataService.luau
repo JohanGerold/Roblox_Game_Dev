@@ -9,6 +9,7 @@ local Server = script.Parent.Parent
 local ProfileStore = require(Server.Packages.ProfileStore)
 local DataTemplate = require(Server.Logic.DataTemplate)
 local Migrations = require(Server.Logic.Migrations)
+local LoadPolicy = require(Server.Logic.LoadPolicy)
 
 local STORE_NAME = RunService:IsStudio() and "PlayerData_Dev" or "PlayerData_Live"
 
@@ -45,9 +46,10 @@ local function sendInit(player: Player)
 end
 
 local function loadPlayer(player: Player)
+	local startedAt = os.clock()
 	local profile = store:StartSessionAsync(tostring(player.UserId), {
 		Cancel = function()
-			return player.Parent ~= Players
+			return LoadPolicy.shouldCancel(player.Parent == Players, os.clock() - startedAt, LoadPolicy.TIMEOUT_SECONDS)
 		end,
 	})
 
