@@ -93,6 +93,8 @@ tags: [planning, decisions]
 
 - **Decision (2026-10-10):** up to 3 stands fight beside you; rebirth unlocks more slots. Server computes stand damage; stands are drawn on each client and can't be hit.
 
+- **Build step 8 choices (2026-10-11):** stands deal damage once a second only while their owner is in the arena, alive and not carrying an egg, and only while the boss is in a normal fight; rebirth damage bonus applies to stands; every player sees every fighting team (placeholder blocks).
+
 ## 20. Raid rewards only on kill
 
 - **Decision (2026-10-10):** if the raid boss isn't defeated, nobody gets any reward.
