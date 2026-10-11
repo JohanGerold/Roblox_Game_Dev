@@ -6,8 +6,11 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Progression = require(ReplicatedStorage.Shared.Config.Progression)
 local Training = require(ReplicatedStorage.Shared.Config.Training)
 local Net = require(ReplicatedStorage.Shared.Net)
+local Format = require(ReplicatedStorage.Shared.Util.Format)
+local RebirthRules = require(script.Parent.Parent.Logic.RebirthRules)
 local TrainingRules = require(script.Parent.Parent.Logic.TrainingRules)
 local AnnounceService = require(script.Parent.AnnounceService)
 local CarryService = require(script.Parent.CarryService)
@@ -105,7 +108,36 @@ local function tick()
 	end
 end
 
+-- Resets money, training and stand levels for a permanent bonus (spec section 5). Returns true on success.
+function ProgressionService:Rebirth(player: Player): boolean
+	local data = DataService:Get(player)
+	if not data then
+		return false
+	end
+	local ok = RebirthRules.canRebirth(data.money, data.rebirths, Progression)
+	if not ok then
+		AnnounceService:Notice(player, "Rebirth costs $" .. Format.number(RebirthRules.cost(data.rebirths, Progression)) .. ".")
+		return false
+	end
+	self:StopTraining(player)
+	local fresh = RebirthRules.apply(data)
+	for key, value in fresh do
+		DataService:Update(player, key, function()
+			return value
+		end)
+	end
+	self:ApplyWalkSpeed(player)
+	local income = math.floor(Progression.incomeMultiplierPerRebirth * 100)
+	local damage = math.floor(Progression.damageMultiplierPerRebirth * 100)
+	AnnounceService:Notice(player, string.format("Rebirth %d! Income +%d%%, damage +%d%% for good.", fresh.rebirths, income, damage))
+	AnnounceService:All(string.format("%s reached rebirth %d!", player.DisplayName, fresh.rebirths), "Epic")
+	return true
+end
+
 function ProgressionService:Init()
+	Net.Server("Rebirth"):On(function(player)
+		self:Rebirth(player)
+	end)
 	Net.Server("Train"):On(function(player, kind, active)
 		if active then
 			self:StartTraining(player, kind)
