@@ -126,7 +126,7 @@ function CombatController:Defend(kind: string, noDash: boolean?)
 	defendRemote:Fire(kind, t)
 	if kind == "Dodge" then
 		ghost(character, Combat.dodgeIFrames)
-		if not noDash and not player:GetAttribute("CarryingGiantEgg") then
+		if not noDash and not player:GetAttribute("CarryingEgg") then
 			dash(humanoid)
 		end
 	else

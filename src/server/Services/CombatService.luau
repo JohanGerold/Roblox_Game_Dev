@@ -16,7 +16,7 @@ local DamageCalc = require(Logic.DamageCalc)
 local DefenseJudge = require(Logic.DefenseJudge)
 local BossService = require(script.Parent.BossService)
 local DataService = require(script.Parent.DataService)
-local GiantEggService = require(script.Parent.GiantEggService)
+local CarryService = require(script.Parent.CarryService)
 
 local CombatService = {}
 
@@ -90,13 +90,13 @@ local function onAttack(player: Player, comboIndex: number, weaponId: string)
 		return
 	end
 	local hit = weapon.combo[comboIndex]
-	local carrier = GiantEggService:CarrierInReach(player, root.Position, hit.range + Combat.rangeTolerance)
+	local carrier = CarryService:CarrierInReach(player, root.Position, hit.range + Combat.rangeTolerance)
 	if carrier then
 		local humanoid = carrier.Character and carrier.Character:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			humanoid:TakeDamage(Carry.carrierHitDamage)
 		end
-		GiantEggService:Drop(carrier, "hit")
+		CarryService:Drop(carrier, "hit")
 		hitResult:Fire(carrier, { result = "Hit", damage = Carry.carrierHitDamage, attackId = "PlayerHit" })
 		return
 	end
