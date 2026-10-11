@@ -97,4 +97,24 @@ tags: [planning, decisions]
 
 - **Decision (2026-10-10):** if the raid boss isn't defeated, nobody gets any reward.
 
+## 21. Strip map and egg chase (2026-10-11)
+
+Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-chase-design.md); where it disagrees with earlier decisions, the spec wins.
+
+- **D1** Straight strip map: home with plots, 500-stud corridor, cursed domain with the arena.
+- **D2** Every egg is carried home, personal rank eggs included (delivered to your plot's pad).
+- **D3** Carry speed = your walk speed x the egg's slowdown (Normal 0.9, Top 0.8, Giant 0.6).
+- **D4** The boss revives enraged 3 s after dying and chases the nearest carrier outside home; a catch costs 20 HP (never lethal) and sends the egg back (Plan C).
+- **D5** The home area is safe; the boss never enters.
+- **D6** A sign at the domain gate shows the speed needed to outrun the boss with each egg (Plan C).
+- **D7** One egg at a time.
+- **D8** Personal eggs: only the owner picks them up, can't be stolen, vanish after 5 min. The giant egg keeps its steal rules.
+- **D9** No locked-zone teasers in V1.
+- **D10** Round cycle: 4 min day, 45 s night; nightfall teleports everyone home, field eggs vanish, boss resets (Plan B).
+- **D11** Day/night is lighting on the round timer, allowed into V1.
+- **D12** Two egg sources a day: boss-kill personal eggs and field eggs (Plan B).
+- **D13** 8 players per server, 8 plots.
+- **D14** Cross-server raids are post-V1.
+- **D15** The chase stops at night.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)
