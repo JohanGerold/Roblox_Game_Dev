@@ -157,6 +157,10 @@ local function step(rec, dt: number)
 	local cfg = rec.cfg
 	local t = now()
 
+	if rec.dormant then
+		return
+	end
+
 	if brain.state == "Dead" then
 		if t - rec.diedAt >= cfg.respawnSeconds then
 			resetBoss(rec)
@@ -267,11 +271,26 @@ function BossService:GetBosses()
 	return records
 end
 
+-- At night (round cycle) the boss is reset to full HP and stands at home: it never attacks, moves or
+-- takes damage until `on` is false again. Safe to call repeatedly.
+function BossService:SetDormant(on: boolean)
+	for _, rec in records do
+		if on then
+			resetBoss(rec)
+		end
+		rec.dormant = on or nil
+		rec.model:SetAttribute("Dormant", on)
+	end
+end
+
 function BossService:IsStaggered(boss): boolean
 	return boss.brain.state == "Staggered"
 end
 
 function BossService:DamageBoss(boss, player: Player, amount: number): number
+	if boss.dormant then
+		return 0
+	end
 	BossBrain.addParticipant(boss.brain, player.UserId)
 	local dealt, killed = BossBrain.applyDamage(boss.brain, player.UserId, amount)
 	if killed then
@@ -283,6 +302,9 @@ function BossService:DamageBoss(boss, player: Player, amount: number): number
 end
 
 function BossService:Parry(boss, poiseDamage: number)
+	if boss.dormant then
+		return
+	end
 	BossBrain.applyParry(boss.brain, poiseDamage, now())
 	setAttributes(boss)
 end
