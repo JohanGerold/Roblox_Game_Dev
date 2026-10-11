@@ -21,5 +21,7 @@ return {
 	dodgeDashSeconds = 0.2,
 	arenaTolerance = 5,
 	standTickSeconds = 1, -- the stand team deals damage once per tick
+	abilityCooldownTolerance = 0.2, -- seconds of latency slack on ability cooldowns
+	shopRange = 15, -- studs from the weapon shop to buy
 	standDamageFactor = 1, -- tuning knob for stand damage against player damage
 }

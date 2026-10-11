@@ -169,4 +169,34 @@ return {
 		expect.eq(C.standTickSeconds, 1)
 		expect.eq(C.standDamageFactor, 1)
 	end,
+	["every boss move has stats"] = function(expect, mods)
+		local Moves = cfg(mods, "Moves")
+		for id, boss in cfg(mods, "Bosses") do
+			for _, moveId in boss.playerMoves do
+				local move = Moves[moveId]
+				expect.truthy(move, id .. " move " .. moveId)
+				expect.truthy(move.damage > 0 and move.range > 0 and move.cooldown > 0, moveId)
+				expect.truthy(type(move.displayName) == "string", moveId .. " name")
+			end
+		end
+	end,
+	["every drop armor piece exists"] = function(expect, mods)
+		local Armor = cfg(mods, "Armor")
+		for id, boss in cfg(mods, "Bosses") do
+			for _, pieceId in boss.drops and boss.drops.armorPieces or {} do
+				local piece = Armor[pieceId]
+				expect.truthy(piece, id .. " armor " .. pieceId)
+				expect.truthy(piece.slot and piece.displayName, pieceId)
+			end
+		end
+	end,
+	["every weapon has a name and a price"] = function(expect, mods)
+		for id, weapon in cfg(mods, "Weapons") do
+			expect.truthy(type(weapon.displayName) == "string", id .. " name")
+			expect.truthy(weapon.price >= 0, id .. " price")
+		end
+	end,
+	["fists are free"] = function(expect, mods)
+		expect.eq(cfg(mods, "Weapons").Fists.price, 0)
+	end,
 }
