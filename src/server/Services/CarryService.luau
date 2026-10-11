@@ -477,6 +477,20 @@ function CarryService:Nightfall(isHome: (Vector3) -> boolean)
 	end
 end
 
+-- The player's normal walk speed changed (training, rebirth). While carrying, the carry speed follows:
+-- new walk speed x the egg's slowdown. Returns false (nothing changed) when they carry nothing.
+function CarryService:SetBaseSpeed(player: Player, walkSpeed: number): boolean
+	local carry = carriers[player]
+	if not carry then
+		return false
+	end
+	carry.savedSpeed = walkSpeed
+	carry.speed = CarryRules.carrySpeed(walkSpeed, Eggs[carry.egg.eggId].carryFactor)
+	carry.humanoid.WalkSpeed = carry.speed
+	CarryService:ResetCheck(player) -- a slowdown must never be read as speeding
+	return true
+end
+
 -- Call after teleporting a carrier so the move is not read as speeding.
 function CarryService:ResetCheck(player: Player)
 	local carry = carriers[player]
