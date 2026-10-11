@@ -227,23 +227,5 @@ for i = 1, map.baseCount do
 	base.Parent = root
 end
 
--- Day look (Plan B moves lighting onto the round timer)
-local Lighting = game:GetService("Lighting")
-Lighting.ClockTime = 17.6
-Lighting.Ambient = Color3.fromRGB(90, 30, 20)
-Lighting.OutdoorAmbient = Color3.fromRGB(120, 50, 30)
-for _, child in Lighting:GetChildren() do
-	if child:IsA("Atmosphere") then
-		child:Destroy()
-	end
-end
-local atmosphere = Instance.new("Atmosphere")
-atmosphere.Density = 0.35
-atmosphere.Color = Color3.fromRGB(255, 110, 60)
-atmosphere.Decay = Color3.fromRGB(120, 30, 20)
-atmosphere.Haze = 2
-atmosphere.Glare = 0.5
-atmosphere.Parent = Lighting
-
 root.Parent = workspace
 return Contract.check(root, map)
