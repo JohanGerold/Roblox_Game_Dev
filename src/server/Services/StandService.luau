@@ -2,18 +2,24 @@
 -- Models are server-side and anchored; the shadowbox animation arrives with real assets (build step 12).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Characters = require(ReplicatedStorage.Shared.Config.Characters)
+local Combat = require(ReplicatedStorage.Shared.Config.Combat)
 local Economy = require(ReplicatedStorage.Shared.Config.Economy)
+local Progression = require(ReplicatedStorage.Shared.Config.Progression)
 local Rarities = require(ReplicatedStorage.Shared.Config.Rarities)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
 local Income = require(ReplicatedStorage.Shared.Util.Income)
 local Server = script.Parent.Parent
+local StandDamage = require(Server.Logic.StandDamage)
 local StandPlace = require(Server.Logic.StandPlace)
+local TeamRules = require(Server.Logic.TeamRules)
 local AnnounceService = require(script.Parent.AnnounceService)
 local BaseService = require(script.Parent.BaseService)
+local BossService = require(script.Parent.BossService)
 local DataService = require(script.Parent.DataService)
 
 local PLACEHOLDER_SIZE = Vector3.new(3, 5, 2)
@@ -28,6 +34,8 @@ local REASON_TEXT = {
 local StandService = {}
 
 local standsFolder: Folder
+local damageNumbers
+local tickAccumulator = 0
 local warnedPlaceholder: { [string]: boolean } = {}
 
 local function findSlot(base: Model, index: number): BasePart?
@@ -150,7 +158,82 @@ local function place(player: Player, charUid: string, slot: number?)
 	end
 end
 
+-- Replaces the player's stand team. Returns false (with a Notice) when the list is not valid.
+function StandService:SetTeam(player: Player, list: any): boolean
+	local data = DataService:Get(player)
+	if not data then
+		return false
+	end
+	local ok = TeamRules.validate(list, data.characters, data.rebirths, Progression)
+	if not ok then
+		AnnounceService:Notice(player, "Couldn't set that team.")
+		return false
+	end
+	DataService:Update(player, "standTeam", function()
+		return table.clone(list)
+	end)
+	return true
+end
+
+-- Attribute StandTeam = character ids of the team in order (stale uids skipped); clients draw them.
+local function publishTeam(player: Player)
+	local data = DataService:Get(player)
+	local ids = {}
+	if data then
+		for _, uid in data.standTeam do
+			local stand = data.characters[uid]
+			if stand and Characters[stand.id] then
+				table.insert(ids, stand.id)
+			end
+		end
+	end
+	player:SetAttribute("StandTeam", table.concat(ids, ","))
+end
+
+-- The boss whose arena the player stands in while that boss can be fought, else nil.
+local function fightableBoss(root: BasePart)
+	for _, boss in BossService:GetBosses() do
+		if BossService:IsInArena(boss, root.Position) then
+			local state = boss.brain.state
+			if state ~= "Dead" and state ~= "Guard" and not boss.dormant then
+				return boss
+			end
+		end
+	end
+	return nil
+end
+
+local function tick()
+	local CarryService = require(script.Parent.CarryService)
+	for _, player in Players:GetPlayers() do
+		local data = DataService:Get(player)
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local fighting = false
+		if data and humanoid and root and humanoid.Health > 0 and #data.standTeam > 0 and not CarryService:IsCarrying(player) then
+			local boss = fightableBoss(root)
+			if boss then
+				fighting = true
+				local amount = StandDamage.perTick(data.standTeam, data.characters, data.rebirths, Characters, Economy, Progression, Combat)
+				local dealt = BossService:DamageBoss(boss, player, amount)
+				if dealt > 0 then
+					local p = boss.pos
+					damageNumbers:Fire(player, { amount = dealt, x = p.X, y = p.Y + 8, z = p.Z, staggered = false, stand = true })
+				end
+			end
+		end
+		if player:GetAttribute("StandsFighting") ~= fighting then
+			player:SetAttribute("StandsFighting", fighting)
+		end
+	end
+end
+
 function StandService:Init()
+	damageNumbers = Net.Server("DamageNumbers")
+	Net.Server("SetTeam"):On(function(player, list)
+		self:SetTeam(player, list)
+	end)
 	standsFolder = Instance.new("Folder")
 	standsFolder.Name = "Stands"
 	standsFolder.Parent = Workspace
@@ -162,9 +245,24 @@ function StandService:Start()
 		if key == "characters" or key == "baseSlots" then
 			self:Refresh(player)
 		end
+		if key == "characters" or key == "standTeam" then
+			publishTeam(player)
+		end
 	end)
 	DataService.Loaded:Connect(function(player)
 		self:Refresh(player)
+		publishTeam(player)
+	end)
+	RunService.Heartbeat:Connect(function(dt)
+		tickAccumulator += dt
+		if tickAccumulator < Combat.standTickSeconds then
+			return
+		end
+		tickAccumulator -= Combat.standTickSeconds
+		local ok, err = xpcall(tick, debug.traceback)
+		if not ok then
+			warn("[StandService] " .. tostring(err))
+		end
 	end)
 	BaseService.Assigned:Connect(function(player)
 		self:Refresh(player)
