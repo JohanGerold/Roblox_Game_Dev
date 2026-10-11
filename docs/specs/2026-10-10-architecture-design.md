@@ -245,6 +245,11 @@ Your stand team is drawn on clients by StandController. StandService ticks damag
 - **Anti-cheat:** carrier position checked each heartbeat; movement faster than carry speed plus tolerance forces a drop at the last valid position.
 - **Timeouts:** undelivered after 3 min, it returns to the arena once; it despawns at 5 min total.
 - **Delivery:** carrier touches their own base's `EggDeliveryPad`; `Stage1_Giant` is added to their eggs with an announcement.
+- **Several eggs:** each boss kill spawns its own egg, up to `GiantEgg.maxActive` (3) at once. Timers run from the moment an egg lands. Returned eggs get no new head start.
+- **Hitting a carrier:** a player's `Attack` hits the nearest other carrier in reach instead of the boss, for `GiantEgg.carrierHitDamage` HP, and drops the egg. Non-carriers are never damaged by players.
+- **Drop spot:** the carrier's last grounded, speed-valid position (checked every 0.25 s; the first 0.5 s after pickup only record). Falling off the map drops the egg back on solid ground.
+- **Delivery rules:** checked on entering the pad; if egg storage is full the player gets a Notice and keeps carrying. While carrying, the dodge claim and i-frames work but the dash doesn't. Stand fighting (step 8) and training (step 10) must check the `CarryingGiantEgg` player attribute.
+- **`GiantEggState` payload:** `{ id, phase, endsAt?, carrierName?, carrierUserId? }`, phase = `Countdown | HeadStart | Free | Carried | Returned | Delivered | Despawned`.
 
 ## 11. Eggs, hatching and stands
 

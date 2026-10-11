@@ -32,10 +32,15 @@ If the boss itself dropped one stealable prize, the strongest player would win i
 - **One hit makes the carrier drop it.** Whoever picks it up next becomes the target, like hot potato, until someone reaches their base.
 - **Optional:** the top damage dealers on the boss get a short head start on the egg, so fighting well matters.
 
+## Decided for V1 (2026-10-10)
+
+- Carrier leaves, dies or falls off the map: the egg drops where they last stood on solid ground and can be grabbed again.
+- Time limit: the egg returns to the arena once after 3 minutes and disappears after 5 minutes.
+- No special escort rules: anyone can hit the carrier, allies included.
+- Each boss kill drops its own giant egg, up to 3 at the same time.
+
 ## Still to decide
 
-- What happens if the carrier leaves the game (egg respawns in the arena?)
-- Time limit before the egg disappears
-- Whether players can team up to escort a carrier
+- Whether players should be able to team up to escort a carrier (shared rewards, shielding)
 
 Related: [Game Concept](game-concept.md), [Stands](stands.md), [Decisions Log](../planning/decisions.md)
