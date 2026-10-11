@@ -27,12 +27,19 @@ function BossBrain.reset(b, now: number)
 	init(b, now)
 end
 
+-- Enraged guard phase after a death: full HP, nothing counted, immune and passive until it ends.
+function BossBrain.enterGuard(b, now: number)
+	init(b, now)
+	b.state = "Guard"
+	b.stateEndsAt = now + b.cfg.guardSeconds
+end
+
 -- Events come back in order: "Windup", "Impact", "StaggerEnded". One state change per call.
 function BossBrain.update(b, now: number, dt: number, targetInRange: boolean, rng: Random): { string }
 	local events = {}
 	local cfg = b.cfg
 	local state = b.state
-	if state == "Dead" then
+	if state == "Dead" or state == "Guard" then
 		return events
 	end
 
@@ -82,7 +89,7 @@ end
 
 -- First sighting of a userId counts as a participant; each one after the first adds hpPerExtraPlayer.
 function BossBrain.addParticipant(b, userId: number)
-	if b.participants[userId] then
+	if b.state == "Guard" or b.participants[userId] then
 		return
 	end
 	b.participants[userId] = true
@@ -95,7 +102,7 @@ end
 
 -- Returns (damage dealt, killed). Dead bosses and non-positive amounts deal nothing.
 function BossBrain.applyDamage(b, userId: number, amount: number): (number, boolean)
-	if b.state == "Dead" or not (amount > 0) then
+	if b.state == "Dead" or b.state == "Guard" or not (amount > 0) then
 		return 0, false
 	end
 	local dealt = math.min(amount, b.hp)
@@ -113,7 +120,7 @@ end
 
 -- Returns true if this parry broke poise (the boss is now Staggered).
 function BossBrain.applyParry(b, poiseDamage: number, now: number): boolean
-	if b.state == "Dead" or b.state == "Staggered" then
+	if b.state == "Dead" or b.state == "Guard" or b.state == "Staggered" then
 		return false
 	end
 	b.poise = math.max(0, b.poise - poiseDamage)

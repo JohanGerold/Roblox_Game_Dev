@@ -152,4 +152,16 @@ return {
 			end
 		end
 	end,
+	["boss chase values match the spec"] = function(expect, mods)
+		local b = cfg(mods, "Bosses").Boss_Lofy
+		expect.eq(b.chaseSpeed, 20)
+		expect.eq(b.catchRange, 6)
+		expect.eq(b.catchDamage, 20)
+		expect.eq(b.reviveSeconds, 3)
+		expect.eq(b.guardSeconds, 60)
+		expect.eq(b.respawnSeconds, nil)
+	end,
+	["catch damage leaves room to survive"] = function(expect, mods)
+		expect.truthy(cfg(mods, "Bosses").Boss_Lofy.catchDamage < 100)
+	end,
 }

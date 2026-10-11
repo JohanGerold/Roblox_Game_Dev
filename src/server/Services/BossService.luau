@@ -162,7 +162,7 @@ local function step(rec, dt: number)
 	end
 
 	if brain.state == "Dead" then
-		if t - rec.diedAt >= cfg.respawnSeconds then
+		if t - rec.diedAt >= cfg.reviveSeconds then
 			resetBoss(rec)
 		end
 		return
