@@ -88,13 +88,26 @@ local function makePart(egg)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
-	label.Text = if egg.kind == "Giant" then "GIANT EGG" else string.format("%s's %s", owner and owner.DisplayName or "Someone", def.displayName)
+	if egg.kind == "Giant" then
+		label.Text = "GIANT EGG"
+	elseif egg.kind == "Field" then
+		label.Text = def.displayName:upper()
+	else
+		label.Text = string.format("%s's %s", owner and owner.DisplayName or "Someone", def.displayName)
+	end
 	label.TextColor3 = def.color
 	label.TextStrokeTransparency = 0
 	label.Font = Enum.Font.GothamBold
 	label.TextScaled = true
 	label.Parent = gui
 	gui.Parent = part
+	if def.glow then
+		local light = Instance.new("PointLight")
+		light.Color = def.color
+		light.Range = 12
+		light.Brightness = 2
+		light.Parent = part
+	end
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Grab"
@@ -248,6 +261,8 @@ function CarryService:TryPickUp(player: Player, eggId: string): (boolean, string
 
 	if egg.kind == "Giant" then
 		AnnounceService:All(player.DisplayName .. " grabbed the Giant Egg!", GiantEgg.announceRarity)
+	elseif egg.eggId == GiantEgg.eggId then
+		AnnounceService:All(player.DisplayName .. " grabbed a Giant Egg!", GiantEgg.announceRarity)
 	else
 		AnnounceService:Notice(player, string.format("Carry your %s home!", def.displayName))
 	end
@@ -262,19 +277,28 @@ local function destroyEgg(egg)
 	end
 end
 
-local function deliver(player: Player, carry)
+-- Grants the carried egg and removes it. Returns false (still carrying) when storage is full:
+-- Grant already sent the player a Notice.
+local function settle(player: Player, carry, notice: string): boolean
 	local egg = carry.egg
 	if not EggService:Grant(player, egg.eggId) then
-		return -- storage full: Grant already sent a Notice, keep carrying
+		return false
 	end
 	detach(player)
 	if egg.kind == "Giant" then
 		AnnounceService:All(player.DisplayName .. " delivered the Giant Egg!", GiantEgg.announceRarity)
 		broadcast(egg, "Delivered", { carrierName = player.DisplayName, carrierUserId = player.UserId })
+	elseif egg.eggId == GiantEgg.eggId then
+		AnnounceService:All(player.DisplayName .. " delivered a Giant Egg!", GiantEgg.announceRarity)
 	else
-		AnnounceService:Notice(player, string.format("Delivered your %s!", Eggs[egg.eggId].displayName))
+		AnnounceService:Notice(player, string.format(notice, Eggs[egg.eggId].displayName))
 	end
 	destroyEgg(egg)
+	return true
+end
+
+local function deliver(player: Player, carry)
+	settle(player, carry, "Delivered your %s!")
 end
 
 local function stepCarrier(player: Player, carry)
@@ -377,6 +401,64 @@ function CarryService:SpawnPersonal(player: Player, eggId: string, position: Vec
 	makePart(egg)
 	egg.phase = "Free"
 	return egg.id
+end
+
+-- Drops a field egg (anyone can grab it, hits drop it) on a ground point. It expires at `expireAt`
+-- (server time). Returns the egg id, or nil for an unknown eggId.
+function CarryService:SpawnField(eggId: string, groundPos: Vector3, expireAt: number): string?
+	if not Eggs[eggId] then
+		return nil
+	end
+	counter += 1
+	local t = now()
+	local size = if eggId == GiantEgg.eggId then GiantEgg.size else Carry.personalSize
+	local egg = {
+		id = "f" .. counter,
+		kind = "Field",
+		eggId = eggId,
+		stealable = true,
+		size = size,
+		spawnPos = groundPos + Vector3.new(0, size / 2, 0),
+		readyAt = t,
+		headStartUntil = t,
+		top = {},
+		regrabUntil = 0,
+		returned = false,
+		expireAt = expireAt,
+	}
+	eggs[egg.id] = egg
+	makePart(egg)
+	egg.phase = "Free"
+	return egg.id
+end
+
+-- Night falls: every carrier's egg counts as delivered (full storage: they keep carrying), then every
+-- egg lying outside home (or still counting down) vanishes. `isHome` says whether a point is at home.
+function CarryService:Nightfall(isHome: (Vector3) -> boolean)
+	for player, carry in table.clone(carriers) do
+		settle(player, carry, "Your %s made it home!")
+	end
+	for _, egg in table.clone(eggs) do
+		if not egg.carrier and (not egg.part or not isHome(egg.part.Position)) then
+			broadcast(egg, "Despawned")
+			if egg.kind == "Personal" then
+				local owner = Players:GetPlayerByUserId(egg.ownerUserId)
+				if owner then
+					AnnounceService:Notice(owner, string.format("The night took your %s.", Eggs[egg.eggId].displayName))
+				end
+			end
+			destroyEgg(egg)
+		end
+	end
+end
+
+-- Call after teleporting a carrier so the move is not read as speeding.
+function CarryService:ResetCheck(player: Player)
+	local carry = carriers[player]
+	local _, root = aliveParts(player)
+	if carry and root then
+		carry.check = CarryCheck.new(root.Position, now(), Carry)
+	end
 end
 
 local function onDefeated(bossId: string, ledger: { [number]: number })
