@@ -63,7 +63,9 @@ local function onDefeated(bossId: string, ledger: { [number]: number })
 	if not rankEggs then
 		return
 	end
-	local ranked = LootRank.rank(ledger, Combat.minDamageShare, rankEggs.topCount)
+	local participants = #LootRank.rank(ledger, Combat.minDamageShare, 0)
+	local topCount = LootRank.topCount(participants, rankEggs.topFraction, rankEggs.topCount)
+	local ranked = LootRank.rank(ledger, Combat.minDamageShare, topCount)
 	local center = CarryService:GetArenaEggSpawn(bossId)
 	local ring = center and CarryRules.ringPositions(center, Carry.personalRingRadius, #ranked)
 	for i, entry in ranked do

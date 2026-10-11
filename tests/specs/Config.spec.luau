@@ -167,7 +167,7 @@ return {
 	["stand tick values"] = function(expect, mods)
 		local C = cfg(mods, "Combat")
 		expect.eq(C.standTickSeconds, 1)
-		expect.eq(C.standDamageFactor, 1)
+		expect.eq(C.standDamageFactor, 0.05)
 	end,
 	["every boss move has stats"] = function(expect, mods)
 		local Moves = cfg(mods, "Moves")
@@ -236,5 +236,13 @@ return {
 		expect.eq(T.trainRange, 6)
 		expect.eq(T.tickSeconds, 1)
 		expect.truthy(T.baseWalkSpeed < T.maxWalkSpeed)
+	end,
+	["top eggs go to a share of the participants"] = function(expect, mods)
+		local rank = cfg(mods, "Bosses").Boss_Lofy.rankEggs
+		expect.eq(rank.topFraction, 0.3)
+		expect.eq(rank.topCount, 3)
+	end,
+	["carry grace has extra slack"] = function(expect, mods)
+		expect.eq(cfg(mods, "Carry").speedGraceSlack, 10)
 	end,
 }

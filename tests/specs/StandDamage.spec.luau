@@ -5,7 +5,9 @@ end
 
 local function damage(mods, team, characters, rebirths)
 	local SD, Ch, E, P, Co = load(mods)
-	return SD.perTick(team, characters, rebirths, Ch, E, P, Co)
+	local combat = table.clone(Co)
+	combat.standDamageFactor = 1 -- the rules are tested at factor 1; the factor itself has its own test
+	return SD.perTick(team, characters, rebirths, Ch, E, P, combat)
 end
 
 return {
@@ -28,5 +30,12 @@ return {
 	end,
 	["empty team deals 0"] = function(expect, mods)
 		expect.eq(damage(mods, {}, {}, 0), 0)
+	end,
+	["the damage factor scales everything"] = function(expect, mods)
+		local SD, Ch, E, P, Co = load(mods)
+		local combat = table.clone(Co)
+		combat.standDamageFactor = 0.05
+		local value = SD.perTick({ "c1" }, { c1 = { id = "Gokku_Red", level = 1 } }, 0, Ch, E, P, combat)
+		expect.near(value, 1500 * 0.05, 1e-9)
 	end,
 }

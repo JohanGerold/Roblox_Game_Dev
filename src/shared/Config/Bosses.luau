@@ -34,7 +34,7 @@ return {
 			{ id = "GroundFire", targeting = "Player", windup = 1.5, activeWindow = 0.2, damage = 30, hitbox = { shape = "Circle", radius = 7, height = 10 }, parryWindow = 0.35, cooldown = 6, poiseOnParry = 15, unparryable = false, danger = true, vfx = "GroundFire", anim = 107992856701130, recovery = 0.6 },
 			{ id = "FlameWave", targeting = "Wave", windup = 2.0, activeWindow = 2.2, damage = 25, hitbox = { shape = "Circle", radius = 70, height = 10 }, waveSpeed = 30, waveStartRadius = 8, parryWindow = 0.35, cooldown = 15, poiseOnParry = 20, unparryable = false, danger = true, vfx = "FlameWave", anim = 108385541643382, recovery = 1.0 },
 		},
-		rankEggs = { top = "Stage1_Top", normal = "Stage1_Normal", topCount = 3 },
+		rankEggs = { top = "Stage1_Top", normal = "Stage1_Normal", topCount = 3, topFraction = 0.3 },
 		playerMoves = { "Lofy_Punch", "Lofy_Stretch", "Lofy_Barrage", "Lofy_Ultimate" },
 		drops = { armorChance = 0.35, armorPieces = { "Lofy_Hat" }, moveCopyChance = 0.05 },
 	},

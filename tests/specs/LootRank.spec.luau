@@ -32,4 +32,11 @@ return {
 		expect.eq(result[1].rank, 1)
 		expect.truthy(result[1].top)
 	end,
+	["top count is a share of the participants, at least one, never above the cap"] = function(expect, mods)
+		local LootRank = load(mods)
+		for participants, expected in { [1] = 1, [2] = 1, [3] = 1, [4] = 2, [5] = 2, [6] = 2, [7] = 3, [8] = 3, [16] = 3 } do
+			expect.eq(LootRank.topCount(participants, 0.3, 3), expected, participants .. " participants")
+		end
+		expect.eq(LootRank.topCount(0, 0.3, 3), 0, "nobody")
+	end,
 }

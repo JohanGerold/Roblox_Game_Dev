@@ -27,17 +27,30 @@ return {
 		expect.eq(Check.step(state, Vector3.new(3.5, 0, 0), 1, true, SPEED, cfg), true)
 		expect.eq(Check.step(state, Vector3.new(11.9, 0, 0), 1.6, true, SPEED, cfg), true)
 	end,
-	["the grace period only records"] = function(expect, mods)
+	["a teleport during the grace period is caught"] = function(expect, mods)
 		local Check, cfg = load(mods)
 		local state = Check.new(Vector3.zero, 0, cfg)
-		expect.eq(Check.step(state, Vector3.new(30, 0, 0), 0.25, true, SPEED, cfg), true)
-		expect.eq(state.lastValid, Vector3.new(30, 0, 0))
-	end,
-	["samples closer together than the sample interval are skipped"] = function(expect, mods)
-		local Check, cfg = load(mods)
-		local state = Check.new(Vector3.zero, 0, cfg)
-		expect.eq(Check.step(state, Vector3.new(500, 0, 0), 0.1, true, SPEED, cfg), true)
+		expect.eq(Check.step(state, Vector3.new(30, 0, 0), 0.25, true, SPEED, cfg), false)
 		expect.eq(state.lastValid, Vector3.zero)
+	end,
+	["a small extra move in the grace period passes"] = function(expect, mods)
+		local Check, cfg = load(mods)
+		local state = Check.new(Vector3.zero, 0, cfg)
+		expect.eq(Check.step(state, Vector3.new(15, 0, 0), 0.25, true, SPEED, cfg), true)
+	end,
+	["a teleport between samples is caught"] = function(expect, mods)
+		local Check, cfg = load(mods)
+		local state = Check.new(Vector3.zero, 0, cfg)
+		expect.eq(Check.step(state, Vector3.new(3.5, 0, 0), 1, true, SPEED, cfg), true)
+		expect.eq(Check.step(state, Vector3.new(500, 0, 0), 1.1, true, SPEED, cfg), false)
+		expect.eq(state.lastValid, Vector3.new(3.5, 0, 0))
+	end,
+	["small moves between samples do not move the recorded spot"] = function(expect, mods)
+		local Check, cfg = load(mods)
+		local state = Check.new(Vector3.zero, 0, cfg)
+		expect.eq(Check.step(state, Vector3.new(3.5, 0, 0), 1, true, SPEED, cfg), true)
+		expect.eq(Check.step(state, Vector3.new(4.5, 0, 0), 1.1, true, SPEED, cfg), true)
+		expect.eq(state.lastValid, Vector3.new(3.5, 0, 0))
 	end,
 	["airborne samples never become the drop spot"] = function(expect, mods)
 		local Check, cfg = load(mods)

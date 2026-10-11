@@ -34,4 +34,12 @@ function LootRank.rank(ledger: { [number]: number }, minShare: number, topCount:
 	return entries
 end
 
+-- How many participants get the top egg: a share of them (at least one), never above `cap`.
+function LootRank.topCount(participants: number, fraction: number, cap: number): number
+	if participants < 1 then
+		return 0
+	end
+	return math.min(cap, math.max(1, math.ceil(participants * fraction)))
+end
+
 return LootRank

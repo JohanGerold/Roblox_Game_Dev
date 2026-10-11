@@ -20,6 +20,7 @@ local LootRank = require(Logic.LootRank)
 local AnnounceService = require(script.Parent.AnnounceService)
 local BaseService = require(script.Parent.BaseService)
 local BossService = require(script.Parent.BossService)
+local ZoneCheck = require(Logic.ZoneCheck)
 local EggService = require(script.Parent.EggService)
 
 local REFUSAL_TEXT = {
@@ -169,13 +170,23 @@ function CarryService:IsCarrying(player: Player): boolean
 	return carriers[player] ~= nil
 end
 
--- Nearest other player carrying a stealable egg within `reach` studs of `position`.
+-- Home is safe: carriers standing inside the HomeZone cannot be hit by other players.
+local function inHome(position: Vector3): boolean
+	for _, zone in CollectionService:GetTagged("HomeZone") do
+		if zone:IsA("BasePart") and ZoneCheck.inside(zone.CFrame, zone.Size, position) then
+			return true
+		end
+	end
+	return false
+end
+
+-- Nearest other player carrying a stealable egg within `reach` studs of `position` (never one at home).
 function CarryService:CarrierInReach(attacker: Player, position: Vector3, reach: number): Player?
 	local best, bestDist
 	for player, carry in carriers do
 		if player ~= attacker and carry.egg.stealable then
 			local _, root = aliveParts(player)
-			if root then
+			if root and not inHome(root.Position) then
 				local d = (root.Position - position).Magnitude
 				if d <= reach and (not bestDist or d < bestDist) then
 					best, bestDist = player, d

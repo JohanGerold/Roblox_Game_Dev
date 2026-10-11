@@ -12,18 +12,21 @@ local function flat(v: Vector3): Vector3
 end
 
 -- Returns false when the carrier moved faster than allowed since the last sample (state is left
--- untouched so `lastValid` stays where they were legitimately). Samples closer together than
--- `speedSampleSeconds` are ignored. `lastValid` only follows grounded samples.
+-- untouched so `lastValid` stays where they were legitimately). The distance is checked on EVERY call,
+-- so a teleport between two samples or right after pickup (extra `speedGraceSlack` for that first
+-- half second) is caught; only the recorded sample waits for `speedSampleSeconds`. `lastValid` only
+-- follows grounded samples.
 function CarryCheck.step(state: State, pos: Vector3, t: number, grounded: boolean, speed: number, cfg): boolean
 	local elapsed = t - state.lastT
+	local allowed = (speed + cfg.speedTolerance) * elapsed + cfg.speedSlack
+	if t < state.graceUntil then
+		allowed += cfg.speedGraceSlack
+	end
+	if (flat(pos) - flat(state.lastPos)).Magnitude > allowed then
+		return false
+	end
 	if elapsed < cfg.speedSampleSeconds then
 		return true
-	end
-	if t >= state.graceUntil then
-		local allowed = (speed + cfg.speedTolerance) * elapsed + cfg.speedSlack
-		if (flat(pos) - flat(state.lastPos)).Magnitude > allowed then
-			return false
-		end
 	end
 	state.lastPos = pos
 	state.lastT = t

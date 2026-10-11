@@ -127,3 +127,17 @@ None of these is exploitable for gain. They should be cleaned up before launch (
 1. Fix findings 1 and 2 in `CarryCheck` with failing tests first (Sonnet high).
 2. Balance (3, 4): you choose the options, then I change config and tests.
 3. Follow-ups as their own tasks: movement checks (5), settings (6), the home-safety decision (8), and the minors (9) in step 14.
+
+## Fix pass (same day, branch `feat/review`)
+
+| # | Finding | Result |
+|---|---|---|
+| 1 | Grace-period teleport | **Fixed.** The speed check never switches off: right after pickup it allows `Carry.speedGraceSlack = 10` extra studs instead. Tests: "a teleport during the grace period is caught", "a small extra move in the grace period passes". Play-check: teleport to the pad right after pickup now drops the egg, with 0 eggs granted. |
+| 2 | Teleport between samples | **Fixed.** The distance is checked on every call; only the recorded sample waits 0.25 s. Test: "a teleport between samples is caught". Play-check: 6 trials at different points of the sample cycle, all dropped and none delivered. |
+| 3 | Top eggs for everyone | **Fixed (option A).** `LootRank.topCount(participants, 0.3, 3)`: top 30% of participants, at least 1, never above 3. Solo kill gives Top; 8 participants with me last gives the Normal egg. The giant egg's head start (top 3 damage dealers) is unchanged. |
+| 4 | Stand damage | **Fixed (option A).** `Combat.standDamageFactor = 0.05` (a Mythic stand deals about 75 per second, near a Katana). Needs the playtest to confirm. |
+| 8 | Robbing carriers at home | **Fixed.** `CarryService:CarrierInReach` skips carriers inside `HomeZone`. Play-check: at home false, in the corridor true. |
+| 5, 6, 7, 9 | Movement checks, settings, bots, old minors | Still open (follow-up tasks). |
+
+One honest limit: a server-side script cannot fully imitate a cheating client (the server sees positions at its own frame boundaries), so finding 2's exact exploit was not reproduced before the fix. The fix is covered by unit tests and the six-trial play-check.
+
