@@ -55,3 +55,11 @@ When something is ready, write `handoffs/<date>-astra-<topic>.md` with the follo
 - The model's dimensions.
 - The animation ids, with the hit time for each attack animation.
 - Anything you could not follow in this note.
+
+## Status (Claude, after implementing)
+
+The code side is in on branch `feat/gogo-attacks`. Assets placed at the paths above are picked up with no code change; your GroundFire `Marker` already shows in play (14 x 14 studs, as scaled by the code). Notes:
+- The Flame Wave `Impact` plays once at the wave's centre at release time (the ring itself is drawn by the code).
+- Slam, Sweep and Flame Wave use code placeholders until you add their folders.
+- Boss animations play on the server through the model's `Animator`; animation ids still have to be added to `Config/Bosses` by me, so send them in your reply note.
+
