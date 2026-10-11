@@ -7,20 +7,26 @@ local RunService = game:GetService("RunService")
 
 local Bosses = require(ReplicatedStorage.Shared.Config.Bosses)
 local Net = require(ReplicatedStorage.Shared.Net)
+local WaveTiming = require(ReplicatedStorage.Shared.Util.WaveTiming)
 local CombatController = require(script.Parent.CombatController)
 
 local player = Players.LocalPlayer
 
 local StudioTestController = {}
 
-local function unparryable(bossId: string, attackId: string): boolean
+local function findAttack(bossId: string, attackId: string)
 	local cfg = Bosses[bossId]
 	for _, attack in cfg and cfg.attacks or {} do
 		if attack.id == attackId then
-			return attack.unparryable
+			return attack
 		end
 	end
-	return false
+	return nil
+end
+
+local function unparryable(bossId: string, attackId: string): boolean
+	local attack = findAttack(bossId, attackId)
+	return attack ~= nil and attack.unparryable
 end
 
 function StudioTestController:Start()
@@ -54,10 +60,22 @@ function StudioTestController:Start()
 		Net.Client(name):Fire(table.unpack(parts))
 	end)
 
-	Net.Client("BossAttack"):On(function(bossId, attackId, impactTime)
+	Net.Client("BossAttack"):On(function(bossId, attackId, impactTime, payload)
 		local mode = player:GetAttribute("AutoDefend")
 		if mode ~= "Parry" and mode ~= "Dodge" then
 			return
+		end
+		local attack = findAttack(bossId, attackId)
+		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if attack and payload and root then
+			local flat = Vector3.new(root.Position.X - payload.x, 0, root.Position.Z - payload.z)
+			if attack.targeting == "Player" then
+				if flat.Magnitude > payload.radius then
+					return -- not in the locked circle
+				end
+			elseif attack.targeting == "Wave" then
+				impactTime = WaveTiming.arrival(flat.Magnitude, impactTime, { waveStartRadius = payload.startRadius, waveSpeed = payload.speed })
+			end
 		end
 		local kind = mode
 		if kind == "Parry" and unparryable(bossId, attackId) then

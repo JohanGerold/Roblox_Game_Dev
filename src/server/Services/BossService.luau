@@ -16,6 +16,7 @@ local Combat = require(ReplicatedStorage.Shared.Config.Combat)
 local Hitbox = require(Logic.Hitbox)
 local ChaseNav = require(Logic.ChaseNav)
 local ZoneCheck = require(Logic.ZoneCheck)
+local WaveTiming = require(ReplicatedStorage.Shared.Util.WaveTiming)
 
 local ATTRIBUTE_INTERVAL = 0.1
 local PLACEHOLDER_SIZE = Vector3.new(8, 12, 8)
@@ -123,6 +124,52 @@ local function setDeadVisual(rec, dead: boolean)
 	end
 end
 
+-- Boss animations. Server-played so every client sees them. Nothing happens without an id or an Animator.
+local function animationTrack(rec, id: any): AnimationTrack?
+	if id == nil then
+		return nil
+	end
+	rec.tracks = rec.tracks or {}
+	if rec.tracks[id] == nil then
+		local animator = rec.model:FindFirstChildWhichIsA("Animator", true)
+		if not animator then
+			rec.tracks[id] = false
+			return nil
+		end
+		local animation = Instance.new("Animation")
+		animation.AnimationId = type(id) == "number" and ("rbxassetid://" .. id) or tostring(id)
+		rec.tracks[id] = animator:LoadAnimation(animation)
+	end
+	return rec.tracks[id] or nil
+end
+
+local function playOnce(rec, id: any)
+	local track = animationTrack(rec, id)
+	if track then
+		track.Priority = Enum.AnimationPriority.Action
+		track.Looped = false
+		track:Play()
+	end
+end
+
+-- "idle" | "move" | nil (stop the loop)
+local function setLoop(rec, name: string?)
+	if rec.loopName == name then
+		return
+	end
+	local old = rec.loopName and animationTrack(rec, rec.cfg.animations[rec.loopName])
+	if old then
+		old:Stop()
+	end
+	rec.loopName = name
+	local track = name and animationTrack(rec, rec.cfg.animations[name])
+	if track then
+		track.Priority = name == "move" and Enum.AnimationPriority.Movement or Enum.AnimationPriority.Idle
+		track.Looped = true
+		track:Play()
+	end
+end
+
 local function clearRage(rec)
 	if rec.rage then
 		rec.rage:Destroy()
@@ -133,6 +180,8 @@ end
 
 local function resetBoss(rec)
 	clearRage(rec)
+	rec.wave = nil
+	rec.lockedCenter = nil
 	BossBrain.reset(rec.brain, now())
 	setDeadVisual(rec, false)
 	rec.diedAt = nil
@@ -155,6 +204,10 @@ local function livingPlayers(): { { player: Player, root: BasePart } }
 end
 
 local function onDeath(rec)
+	rec.wave = nil
+	rec.lockedCenter = nil
+	setLoop(rec, nil)
+	playOnce(rec, rec.cfg.animations.death)
 	rec.diedAt = now()
 	setDeadVisual(rec, true)
 	setAttributes(rec)
@@ -165,6 +218,8 @@ end
 
 -- The revived boss: full HP, immune, red glow; it guards the eggs instead of fighting.
 local function enterGuard(rec, t: number)
+	rec.wave = nil
+	rec.lockedCenter = nil
 	BossBrain.enterGuard(rec.brain, t)
 	setDeadVisual(rec, false)
 	rec.diedAt = nil
@@ -276,6 +331,7 @@ local function step(rec, dt: number)
 	end
 
 	-- movement: only while idle
+	local moved = false
 	if brain.state == "Idle" then
 		local goal = target and target.root.Position or rec.home
 		local offset = flat(goal) - flat(rec.pos)
@@ -289,28 +345,88 @@ local function step(rec, dt: number)
 				newPos = rec.center + fromCenter.Unit * limit
 			end
 			place(rec, newPos, goal)
+			moved = true
 		elseif target then
 			place(rec, rec.pos, target.root.Position)
 		end
 	end
 
-	local events = BossBrain.update(brain, t, dt, inRange, rng)
+	local events = BossBrain.update(brain, t, dt, inRange, rng, target ~= nil)
 	for _, event in events do
+		local attack = brain.attack
 		if event == "Windup" then
-			if target then
+			local payload
+			if attack.targeting == "Player" then
+				local inArena = {}
+				for _, c in candidates do
+					if ArenaCheck.inside(rec.center, Map.arenaRadius, c.root.Position, 0) then
+						table.insert(inArena, c)
+					end
+				end
+				local chosen = inArena[rng:NextInteger(1, math.max(1, #inArena))] or target
+				if chosen then
+					place(rec, rec.pos, chosen.root.Position)
+					rec.lockedCenter = Vector3.new(chosen.root.Position.X, rec.groundY, chosen.root.Position.Z)
+					payload = { x = rec.lockedCenter.X, z = rec.lockedCenter.Z, radius = attack.hitbox.radius, targetUserId = chosen.player.UserId }
+				end
+			elseif attack.targeting == "Wave" then
+				payload = { x = rec.pos.X, z = rec.pos.Z, speed = attack.waveSpeed, startRadius = attack.waveStartRadius, maxRadius = Map.arenaRadius }
+			elseif target then
 				place(rec, rec.pos, target.root.Position)
 			end
-			bossAttackRemote:FireAll(rec.id, brain.attack.id, brain.impactTime)
+			playOnce(rec, attack.anim)
+			bossAttackRemote:FireAll(rec.id, attack.id, brain.impactTime, payload)
 		elseif event == "Impact" then
-			local origin = CFrame.new(rec.pos.X, rec.groundY, rec.pos.Z) * (rec.facing - rec.facing.Position)
-			local victims = {}
-			for _, c in candidates do
-				if Hitbox.contains(brain.attack.hitbox, origin, c.root.Position) then
-					table.insert(victims, c.player)
+			if attack.targeting == "Wave" then
+				rec.wave = { start = brain.impactTime, center = rec.pos, attack = attack, reached = {} }
+			else
+				local origin = CFrame.new(rec.pos.X, rec.groundY, rec.pos.Z) * (rec.facing - rec.facing.Position)
+				if attack.targeting == "Player" then
+					if rec.lockedCenter then
+						origin = CFrame.new(rec.lockedCenter)
+					end
+				end
+				local victims = {}
+				if attack.targeting ~= "Player" or rec.lockedCenter then
+					for _, c in candidates do
+						if Hitbox.contains(attack.hitbox, origin, c.root.Position) then
+							table.insert(victims, c.player)
+						end
+					end
+				end
+				rec.lockedCenter = nil
+				BossService.Impact:Fire(rec, attack, victims, brain.impactTime)
+			end
+		end
+	end
+
+	-- Flame Wave: each player is hit when the growing ring reaches them, judged at that moment.
+	if rec.wave and brain.state ~= "Active" then
+		rec.wave = nil
+	end
+	if rec.wave then
+		local wave = rec.wave
+		local radius = WaveTiming.radiusAt(t, wave.start, wave.attack, Map.arenaRadius)
+		for _, c in candidates do
+			if not wave.reached[c.player] and ArenaCheck.inside(rec.center, Map.arenaRadius, c.root.Position, 0) then
+				local distance = (flat(c.root.Position) - flat(wave.center)).Magnitude
+				if radius >= distance then
+					wave.reached[c.player] = true
+					BossService.Impact:Fire(rec, wave.attack, { c.player }, WaveTiming.arrival(distance, wave.start, wave.attack))
 				end
 			end
-			BossService.Impact:Fire(rec, brain.attack, victims, brain.impactTime)
 		end
+	end
+
+	if brain.state == "Idle" then
+		setLoop(rec, moved and "move" or "idle")
+	end
+	if rec.lastState ~= brain.state then
+		if brain.state == "Staggered" then
+			setLoop(rec, nil)
+			playOnce(rec, cfg.animations.stagger)
+		end
+		rec.lastState = brain.state
 	end
 
 	if rec.shownState ~= brain.state or os.clock() >= rec.nextAttr then
