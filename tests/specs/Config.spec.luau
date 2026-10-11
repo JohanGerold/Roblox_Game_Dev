@@ -109,10 +109,23 @@ return {
 		expect.eq(K.Dodge, "LeftShift")
 		expect.eq(K.ToggleCombatMode, "LeftControl")
 	end,
+	["every egg has a carry factor and a color"] = function(expect, mods)
+		for id, egg in cfg(mods, "Eggs") do
+			expect.truthy(type(egg.carryFactor) == "number" and egg.carryFactor > 0 and egg.carryFactor <= 1, id .. " carryFactor")
+			expect.eq(typeof(egg.color), "Color3", id .. " color")
+		end
+	end,
 	["giant egg config is consistent"] = function(expect, mods)
 		local G, E, R = cfg(mods, "GiantEgg"), cfg(mods, "Eggs"), cfg(mods, "Rarities")
 		expect.truthy(E[G.eggId], "egg " .. G.eggId)
 		expect.truthy(G.returnAfterSeconds < G.despawnAfterSeconds)
 		expect.truthy(R.byName[G.announceRarity], "announce rarity")
+	end,
+	["carry speed lives in the egg, not in training"] = function(expect, mods)
+		expect.eq(cfg(mods, "Training").carryWalkSpeed, nil)
+	end,
+	["personal egg ring clears the boss"] = function(expect, mods)
+		local K, M = cfg(mods, "Carry"), cfg(mods, "Map")
+		expect.truthy(K.personalRingRadius + K.personalSize < M.giantEggOffset.Magnitude - 5)
 	end,
 }

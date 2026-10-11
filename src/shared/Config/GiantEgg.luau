@@ -1,20 +1,13 @@
 -- Giant egg tuning (spec section 10). Times in seconds, distances in studs.
+-- Values shared with personal eggs live in Config/Carry.
 return {
 	eggId = "Stage1_Giant",
 	countdownSeconds = 3,
 	headStartSeconds = 2,
 	headStartCount = 3,
-	pickupRange = 10,
-	regrabCooldown = 1,
 	returnAfterSeconds = 180,
 	despawnAfterSeconds = 300,
 	maxActive = 3,
-	carrierHitDamage = 10,
-	speedSampleSeconds = 0.25,
-	speedTolerance = 4,
-	speedSlack = 4,
-	speedGraceSeconds = 0.5,
-	padHeight = 8,
 	announceRarity = "Mythic",
 	size = 6,
 }

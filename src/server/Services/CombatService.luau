@@ -6,7 +6,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 
 local Armor = require(ReplicatedStorage.Shared.Config.Armor)
 local Combat = require(ReplicatedStorage.Shared.Config.Combat)
-local GiantEgg = require(ReplicatedStorage.Shared.Config.GiantEgg)
+local Carry = require(ReplicatedStorage.Shared.Config.Carry)
 local Progression = require(ReplicatedStorage.Shared.Config.Progression)
 local Weapons = require(ReplicatedStorage.Shared.Config.Weapons)
 local Net = require(ReplicatedStorage.Shared.Net)
@@ -94,10 +94,10 @@ local function onAttack(player: Player, comboIndex: number, weaponId: string)
 	if carrier then
 		local humanoid = carrier.Character and carrier.Character:FindFirstChildOfClass("Humanoid")
 		if humanoid then
-			humanoid:TakeDamage(GiantEgg.carrierHitDamage)
+			humanoid:TakeDamage(Carry.carrierHitDamage)
 		end
 		GiantEggService:Drop(carrier, "hit")
-		hitResult:Fire(carrier, { result = "Hit", damage = GiantEgg.carrierHitDamage, attackId = "PlayerHit" })
+		hitResult:Fire(carrier, { result = "Hit", damage = Carry.carrierHitDamage, attackId = "PlayerHit" })
 		return
 	end
 	local boss = bossInReach(root.Position, hit.range + Combat.rangeTolerance)

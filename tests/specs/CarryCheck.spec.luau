@@ -1,5 +1,5 @@
 local function load(mods)
-	return require(mods.Logic.CarryCheck), require(mods.Shared.Config.GiantEgg)
+	return require(mods.Logic.CarryCheck), require(mods.Shared.Config.Carry)
 end
 
 local SPEED = 14
@@ -50,5 +50,14 @@ return {
 		local Check, cfg = load(mods)
 		local state = Check.new(Vector3.zero, 0, cfg)
 		expect.eq(Check.step(state, Vector3.new(0, -50, 0), 1, true, SPEED, cfg), true)
+	end,
+	["trained walker passes at 27"] = function(expect, mods)
+		local Check, cfg = load(mods)
+		local state = Check.new(Vector3.zero, 0, cfg)
+		local x = 0
+		for t = 1, 5 do
+			x += 6.75
+			expect.eq(Check.step(state, Vector3.new(x, 0, 0), t * 0.25, true, 27, cfg), true, "step " .. t)
+		end
 	end,
 }

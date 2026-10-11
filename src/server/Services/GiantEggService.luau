@@ -8,12 +8,13 @@ local RunService = game:GetService("RunService")
 
 local Bosses = require(ReplicatedStorage.Shared.Config.Bosses)
 local Combat = require(ReplicatedStorage.Shared.Config.Combat)
+local Carry = require(ReplicatedStorage.Shared.Config.Carry)
+local Eggs = require(ReplicatedStorage.Shared.Config.Eggs)
 local GiantEgg = require(ReplicatedStorage.Shared.Config.GiantEgg)
-local Training = require(ReplicatedStorage.Shared.Config.Training)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Logic = script.Parent.Parent.Logic
 local CarryCheck = require(Logic.CarryCheck)
-local GiantEggRules = require(Logic.GiantEggRules)
+local CarryRules = require(Logic.CarryRules)
 local LootRank = require(Logic.LootRank)
 local AnnounceService = require(script.Parent.AnnounceService)
 local BaseService = require(script.Parent.BaseService)
@@ -92,7 +93,7 @@ local function makePart(egg)
 	prompt.ActionText = "Grab"
 	prompt.ObjectText = "Giant Egg"
 	prompt.HoldDuration = 0.3
-	prompt.MaxActivationDistance = GiantEgg.pickupRange
+	prompt.MaxActivationDistance = Carry.pickupRange
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = part
 	prompt.Triggered:Connect(function(player)
@@ -171,7 +172,7 @@ function GiantEggService:Drop(player: Player, reason: string)
 	local egg = carry.egg
 	local t = now()
 	egg.lastCarrierUserId = player.UserId
-	egg.regrabUntil = t + GiantEgg.regrabCooldown
+	egg.regrabUntil = t + Carry.regrabCooldown
 	egg.part.Anchored = true
 	egg.part.CFrame = CFrame.new(carry.check.lastValid)
 	egg.prompt.Enabled = true
@@ -186,7 +187,7 @@ function GiantEggService:TryPickUp(player: Player, eggId: string): (boolean, str
 		return false, "unavailable"
 	end
 	local distance = (root.Position - egg.part.Position).Magnitude
-	local ok, reason = GiantEggRules.canPickUp(egg, player.UserId, carriers[player] ~= nil, distance, now(), GiantEgg)
+	local ok, reason = CarryRules.canPickUp(egg, player.UserId, carriers[player] ~= nil, distance, now(), Carry)
 	if not ok then
 		if reason and REFUSAL_TEXT[reason] then
 			AnnounceService:Notice(player, REFUSAL_TEXT[reason])
@@ -217,7 +218,8 @@ function GiantEggService:TryPickUp(player: Player, eggId: string): (boolean, str
 		weld = weld,
 		highlight = highlight,
 		savedSpeed = humanoid.WalkSpeed,
-		check = CarryCheck.new(root.Position, now(), GiantEgg),
+		speed = CarryRules.carrySpeed(humanoid.WalkSpeed, Eggs[egg.eggId].carryFactor),
+		check = CarryCheck.new(root.Position, now(), Carry),
 		onPad = false,
 		connections = {},
 	}
@@ -228,7 +230,7 @@ function GiantEggService:TryPickUp(player: Player, eggId: string): (boolean, str
 		GiantEggService:Drop(player, "respawned")
 	end))
 	carriers[player] = carry
-	humanoid.WalkSpeed = Training.carryWalkSpeed
+	humanoid.WalkSpeed = carry.speed
 	egg.carrier = player
 	egg.carrierUserId = player.UserId
 	player:SetAttribute("CarryingGiantEgg", true)
@@ -262,13 +264,13 @@ local function stepCarrier(player: Player, carry)
 		return
 	end
 	local grounded = humanoid.FloorMaterial ~= Enum.Material.Air
-	if not CarryCheck.step(carry.check, root.Position, now(), grounded, Training.carryWalkSpeed, GiantEgg) then
+	if not CarryCheck.step(carry.check, root.Position, now(), grounded, carry.speed, Carry) then
 		GiantEggService:Drop(player, "speed")
 		return
 	end
 	carry.pad = carry.pad or findPad(player)
 	local pad = carry.pad
-	local onPad = pad ~= nil and GiantEggRules.onPad(root.Position, pad.CFrame, pad.Size, GiantEgg.padHeight)
+	local onPad = pad ~= nil and CarryRules.onPad(root.Position, pad.CFrame, pad.Size, Carry.padHeight)
 	if onPad and not carry.onPad then
 		carry.onPad = true
 		deliver(player, carry)
@@ -289,7 +291,7 @@ local function stepEgg(egg)
 	if egg.phase == "HeadStart" and t >= egg.headStartUntil then
 		broadcast(egg, "Free")
 	end
-	local action = GiantEggRules.timeoutAction(egg, t, GiantEgg)
+	local action = CarryRules.timeoutAction(egg, t)
 	if action == "despawn" then
 		if egg.carrier then
 			detach(egg.carrier)
@@ -352,6 +354,9 @@ local function onDefeated(bossId: string, ledger: { [number]: number })
 		top = top,
 		regrabUntil = 0,
 		returned = false,
+		eggId = GiantEgg.eggId,
+		returnAt = readyAt + GiantEgg.returnAfterSeconds,
+		expireAt = readyAt + GiantEgg.despawnAfterSeconds,
 	}
 	eggs[egg.id] = egg
 	AnnounceService:All("A Giant Egg is dropping in the arena!", GiantEgg.announceRarity)
