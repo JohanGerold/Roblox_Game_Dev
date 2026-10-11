@@ -111,6 +111,7 @@ Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-ch
 - **D8** Personal eggs: only the owner picks them up, can't be stolen, vanish after 5 min. The giant egg keeps its steal rules.
 - **D9** No locked-zone teasers in V1.
 - **D10** Round cycle: 4 min day, 45 s night; nightfall teleports everyone home, field eggs vanish, boss resets (Plan B).
+- **Plan B choices:** at nightfall a carrier whose storage is full keeps the egg at home; uncarried eggs lying outside home vanish (inside home they stay); the boss is dormant (full HP, no attacks, no damage) at night; field giant eggs have no countdown or banner.
 - **D11** Day/night is lighting on the round timer, allowed into V1.
 - **D12** Two egg sources a day: boss-kill personal eggs and field eggs (Plan B).
 - **D13** 8 players per server, 8 plots.
