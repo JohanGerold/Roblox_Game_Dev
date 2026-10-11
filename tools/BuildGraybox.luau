@@ -149,7 +149,10 @@ local segLen = 2 * math.pi * map.arenaRadius / segments + 1
 for i = 1, segments do
 	local a = math.rad((i - 1) * 360 / segments)
 	local pos = ARENA + Vector3.new(map.arenaRadius * math.cos(a), map.arenaWallHeight / 2, map.arenaRadius * math.sin(a))
-	part(arena, "Wall", Vector3.new(segLen, map.arenaWallHeight, 2), CFrame.lookAt(pos, Vector3.new(ARENA.X, pos.Y, ARENA.Z)), GRAY)
+	-- no wall segment on the corridor side (angle 180): the carriers' route into the arena stays open
+	if i ~= segments / 2 + 1 then
+		part(arena, "Wall", Vector3.new(segLen, map.arenaWallHeight, 2), CFrame.lookAt(pos, Vector3.new(ARENA.X, pos.Y, ARENA.Z)), GRAY)
+	end
 end
 marker(arena, "BossSpawn", "BossSpawn", CFrame.new(ARENA + Vector3.new(0, 0.6, 0)), Color3.fromRGB(220, 60, 60))
 marker(arena, "GiantEggSpawn", "GiantEggSpawn", CFrame.new(ARENA + map.giantEggOffset + Vector3.new(0, 0.6, 0)), Color3.fromRGB(240, 200, 60))

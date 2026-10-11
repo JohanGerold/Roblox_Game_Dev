@@ -75,9 +75,12 @@ local function makeModel(cfg): Model
 		end
 		model = makePlaceholder(cfg)
 	end
+	-- A rigged model (has an Animator) is anchored at its root only, so its joints can animate; anything
+	-- else (the placeholder) is anchored part by part.
+	local rigged = model:FindFirstChildWhichIsA("Animator", true) ~= nil and model.PrimaryPart ~= nil
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") then
-			d.Anchored = true
+			d.Anchored = not rigged or d == model.PrimaryPart
 		end
 	end
 	return model
@@ -98,7 +101,7 @@ end
 
 local function place(rec, position: Vector3, lookAt: Vector3)
 	rec.pos = position
-	local at = Vector3.new(position.X, rec.groundY + rec.height / 2, position.Z)
+	local at = Vector3.new(position.X, rec.groundY + rec.pivotHeight, position.Z)
 	local toward = Vector3.new(lookAt.X - at.X, 0, lookAt.Z - at.Z)
 	local cf
 	if toward.Magnitude > 1e-3 then
@@ -170,6 +173,15 @@ local function setLoop(rec, name: string?)
 	end
 end
 
+local function stopAnimations(rec)
+	rec.loopName = nil
+	for _, track in rec.tracks or {} do
+		if track then
+			track:Stop()
+		end
+	end
+end
+
 local function clearRage(rec)
 	if rec.rage then
 		rec.rage:Destroy()
@@ -180,6 +192,7 @@ end
 
 local function resetBoss(rec)
 	clearRage(rec)
+	stopAnimations(rec)
 	rec.wave = nil
 	rec.lockedCenter = nil
 	BossBrain.reset(rec.brain, now())
@@ -209,7 +222,19 @@ local function onDeath(rec)
 	setLoop(rec, nil)
 	playOnce(rec, rec.cfg.animations.death)
 	rec.diedAt = now()
-	setDeadVisual(rec, true)
+	local deathTrack = animationTrack(rec, rec.cfg.animations.death)
+	if deathTrack then
+		-- let the death animation play, then hide the body before the revive
+		local wait = math.min(deathTrack.Length > 0 and deathTrack.Length or 2.5, rec.cfg.reviveSeconds - 0.2)
+		local diedAt = rec.diedAt
+		task.delay(wait, function()
+			if rec.diedAt == diedAt and rec.brain.state == "Dead" then
+				setDeadVisual(rec, true)
+			end
+		end)
+	else
+		setDeadVisual(rec, true)
+	end
 	setAttributes(rec)
 	print("[BossService] " .. rec.id .. " defeated")
 	local ledger = table.clone(rec.brain.ledger)
@@ -218,6 +243,7 @@ end
 
 -- The revived boss: full HP, immune, red glow; it guards the eggs instead of fighting.
 local function enterGuard(rec, t: number)
+	stopAnimations(rec)
 	rec.wave = nil
 	rec.lockedCenter = nil
 	BossBrain.enterGuard(rec.brain, t)
@@ -273,6 +299,9 @@ local function stepGuard(rec, dt: number, t: number)
 		local stepped = rec.pos + offset.Unit * math.min(cfg.chaseSpeed * dt, offset.Magnitude)
 		local newPos = ChaseNav.clamp(stepped, Map, cfg.bodyRadius)
 		place(rec, Vector3.new(newPos.X, rec.pos.Y, newPos.Z), goal)
+		setLoop(rec, "move")
+	else
+		setLoop(rec, "idle")
 	end
 	if target and BossService:DistanceToBody(rec, target.root.Position) <= cfg.catchRange then
 		local health = target.humanoid.Health
@@ -447,18 +476,17 @@ local function spawnBoss(arena: Model, id: string, cfg)
 		return
 	end
 	local model = makeModel(cfg)
-	local _, size = model:GetBoundingBox()
-	local box = arena:GetBoundingBox()
+	local boxCf, size = model:GetBoundingBox()
 	local rec = {
 		id = id,
 		cfg = cfg,
 		brain = BossBrain.new(cfg, now()),
 		model = model,
 		arena = arena,
-		center = Vector3.new(box.Position.X, spawnPart.Position.Y, box.Position.Z),
+		center = Vector3.new(spawnPart.Position.X, spawnPart.Position.Y, spawnPart.Position.Z), -- the arena centre is the boss spawn
 		home = Vector3.new(spawnPart.Position.X, spawnPart.Position.Y, spawnPart.Position.Z),
 		groundY = spawnPart.Position.Y - spawnPart.Size.Y / 2,
-		height = size.Y,
+		pivotHeight = model:GetPivot().Position.Y - (boxCf.Position.Y - size.Y / 2), -- pivot above the feet
 		original = {},
 	}
 	model.Parent = bossFolder
