@@ -26,7 +26,19 @@ Rules for these models:
 - Stands are shown at a base slot (about 5 x 5 studs of floor). Keep them roughly 3 x 5 x 2 studs, like the placeholder.
 - **No Scripts, LocalScripts or ModuleScripts inside any model.** Remove them from toolbox and generated models. Never `require(assetId)` or `loadstring`.
 
-**No asset slot yet** (the code needs a small hook first; ask before building these): eggs and the giant egg, stands drawn during combat, weapons (`Config/Weapons.model`: `Fists`, `Stick`, `Katana`), armor (`Lofy_Hat`), effects, sounds, icons. Plan the art, but tell the code side the model name and where it goes.
+**No asset slot yet** (the code needs a small hook first; ask before building these): eggs and the giant egg, stands drawn during combat, weapons (`Config/Weapons.model`: `Fists`, `Stick`, `Katana`), armor (`Lofy_Hat`), effects other than boss attacks (2a), sounds, icons. Plan the art, but tell the code side the model name and where it goes.
+
+## 2a. Boss attack effects and animations
+
+Design: `docs/specs/2026-10-11-gogo-attacks-design.md`.
+
+- **Boss model:** `ReplicatedStorage.Assets.Bosses.Boss_Gogo` (stage 1 boss Gogo; the config `model` field). About 12 studs tall, feet at y = 0, facing −Z, with an `Animator` inside a `Humanoid` or `AnimationController`.
+- **Effects:** `ReplicatedStorage.Assets.VFX.<vfxFolder>.<vfx>`: Gogo uses `vfxFolder = "Gogo"`, with `vfx` names `Slam`, `Sweep`, `GroundFire`, `FlameWave`. Each is a `Folder` that may contain:
+  - `Marker`: a flat `BasePart` (or `Model` with `PrimaryPart`) exactly **1 × 1 stud in X and Z**, top face up. The code scales it to the attack area on the ground and fades it out at impact.
+  - `Impact`: a `Model` with parts and `ParticleEmitter`s, cloned at the impact point, emitters enabled, removed after 2 s.
+- **Never put gameplay information only in `Impact`.** Reduced effects hide `Impact`; markers, timing rings, the PARRY prompt and the danger warning are always drawn by the code.
+- **Animations:** asset ids go in `Config/Bosses` (`animations = { idle, move, stagger, death }`, plus `anim` on each attack). The hit moment of an attack animation must line up with the end of that attack's warning (`windup`).
+- Missing pieces fall back to placeholder shapes, so deliver them one at a time.
 
 ## 3. Animations
 

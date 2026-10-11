@@ -57,7 +57,7 @@ He picks one uniformly at random from the eligible list. The brain stores a read
 
 - Boss model: `ReplicatedStorage.Assets.Bosses.Boss_Gogo`, about 12 studs tall, feet at y = 0, one `Model` with `PrimaryPart`, no scripts. Animations need an `Animator` (inside a `Humanoid` or `AnimationController`).
 - Effects: `ReplicatedStorage.Assets.VFX.Gogo.<vfx>` (a `Folder` per attack), each optionally containing:
-  - `Marker`: a flat `BasePart` (or `Model` with `PrimaryPart`); the code scales it to the attack area, places it on the ground and fades it out at impact.
+  - `Marker`: a flat `BasePart` (or `Model` with `PrimaryPart`), 1 × 1 stud in X and Z; the code scales it to the attack area (circle: diameter × diameter; cone: width × range; Flame Wave ring: current diameter each frame), places it on the ground and fades it out at impact.
   - `Impact`: a `Model` with emitters/parts; the code clones it at the impact point (Flame Wave: around the ring), enables its `ParticleEmitter`s, and removes it after 2 s.
 - Animation ids go in `Config/Bosses` (`animations`, per-attack `anim`); the code plays them when present.
 - Anything missing falls back to placeholder neon shapes; the fight never waits for art.
