@@ -11,6 +11,21 @@ local function toWindup(BB, cfg)
 	return b, now
 end
 
+
+-- A copy of the real boss config whose attack list is only the named attacks.
+local function cfgWith(cfg, ids)
+	local copy = table.clone(cfg)
+	copy.attacks = {}
+	for _, id in ids do
+		for _, attack in cfg.attacks do
+			if attack.id == id then
+				table.insert(copy.attacks, attack)
+			end
+		end
+	end
+	return copy
+end
+
 return {
 	["starts idle at full hp and poise"] = function(expect, mods)
 		local BB, cfg = load(mods)
@@ -168,5 +183,57 @@ return {
 		expect.eq(b.state, "Idle")
 		local dealt = BB.applyDamage(b, 1, 100)
 		expect.eq(dealt, 100)
+	end,
+	["melee attacks only start with a target in range"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local b = BB.new(cfgWith(cfg, { "Slam", "Sweep" }), 0)
+		expect.eq(#BB.update(b, 5, 0.1, false, Random.new(1), true), 0)
+		expect.eq(b.state, "Idle")
+	end,
+	["ranged attacks start with anyone in the arena"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local b = BB.new(cfgWith(cfg, { "GroundFire" }), 0)
+		local events = BB.update(b, 5, 0.1, false, Random.new(1), true)
+		expect.eq(events[1], "Windup")
+		expect.eq(b.attack.id, "GroundFire")
+	end,
+	["an empty arena casts nothing"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local b = BB.new(cfgWith(cfg, { "GroundFire", "FlameWave" }), 0)
+		expect.eq(#BB.update(b, 5, 0.1, false, Random.new(1), false), 0)
+		expect.eq(b.state, "Idle")
+	end,
+	["a cooldown blocks a repeat until it is over"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local b = BB.new(cfgWith(cfg, { "GroundFire" }), 0)
+		local rng = Random.new(1)
+		BB.update(b, 1, 0.1, false, rng, true) -- windup at t = 1, cooldown 6 -> ready at 7
+		BB.update(b, b.impactTime, 0.1, false, rng, true)
+		BB.update(b, b.stateEndsAt + 0.01, 0.1, false, rng, true)
+		BB.update(b, b.stateEndsAt + 0.01, 0.1, false, rng, true)
+		expect.eq(b.state, "Idle")
+		expect.eq(#BB.update(b, 6.9, 0.1, false, rng, true), 0, "still cooling down")
+		expect.eq(BB.update(b, 7, 0.1, false, rng, true)[1], "Windup")
+	end,
+	["reset clears cooldowns"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local c = cfgWith(cfg, { "GroundFire" })
+		local b = BB.new(c, 0)
+		BB.update(b, 1, 0.1, false, Random.new(1), true)
+		BB.reset(b, 10)
+		expect.eq(BB.update(b, 11, 0.1, false, Random.new(1), true)[1], "Windup")
+	end,
+	["anyInArena defaults to targetInRange"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		local b = BB.new(cfg, 0)
+		expect.eq(BB.update(b, 5, 0.1, true, Random.new(1))[1], "Windup")
+	end,
+	["a mixed list picks only what is eligible"] = function(expect, mods)
+		local BB, cfg = load(mods)
+		for seed = 1, 20 do
+			local b = BB.new(cfg, 0)
+			BB.update(b, 5, 0.1, false, Random.new(seed), true)
+			expect.truthy(b.attack ~= nil and b.attack.targeting ~= "Self", "seed " .. seed .. " out of melee range")
+		end
 	end,
 }

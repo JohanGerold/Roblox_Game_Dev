@@ -15,6 +15,7 @@ local function init(b, now: number)
 	b.participants = {}
 	b.participantCount = 0
 	b.ledger = {}
+	b.readyAt = {} -- attack id -> time it may be chosen again (cooldowns)
 end
 
 function BossBrain.new(cfg, now: number)
@@ -35,7 +36,9 @@ function BossBrain.enterGuard(b, now: number)
 end
 
 -- Events come back in order: "Windup", "Impact", "StaggerEnded". One state change per call.
-function BossBrain.update(b, now: number, dt: number, targetInRange: boolean, rng: Random): { string }
+-- targetInRange: someone is in melee range (Self attacks). anyInArena: someone is in the arena (Player and
+-- Wave attacks); it defaults to targetInRange.
+function BossBrain.update(b, now: number, dt: number, targetInRange: boolean, rng: Random, anyInArena: boolean?): { string }
 	local events = {}
 	local cfg = b.cfg
 	local state = b.state
@@ -58,12 +61,27 @@ function BossBrain.update(b, now: number, dt: number, targetInRange: boolean, rn
 	end
 
 	if state == "Idle" then
-		if now >= b.stateEndsAt and targetInRange then
-			local attack = cfg.attacks[rng:NextInteger(1, #cfg.attacks)]
-			b.attack = attack
-			b.impactTime = now + attack.windup
-			b.state = "Windup"
-			table.insert(events, "Windup")
+		if now >= b.stateEndsAt then
+			local arena = if anyInArena == nil then targetInRange else anyInArena
+			local eligible = {}
+			for _, attack in cfg.attacks do
+				local ready = now >= (b.readyAt[attack.id] or 0)
+				if attack.targeting == "Self" or attack.targeting == nil then
+					if targetInRange then
+						table.insert(eligible, attack)
+					end
+				elseif arena and ready then
+					table.insert(eligible, attack)
+				end
+			end
+			if #eligible > 0 then
+				local attack = eligible[rng:NextInteger(1, #eligible)]
+				b.readyAt[attack.id] = now + (attack.cooldown or 0)
+				b.attack = attack
+				b.impactTime = now + attack.windup
+				b.state = "Windup"
+				table.insert(events, "Windup")
+			end
 		end
 	elseif state == "Windup" then
 		if now >= b.impactTime then
