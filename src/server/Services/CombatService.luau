@@ -157,7 +157,7 @@ local function judgeVictim(boss, attack, player: Player, impactTime: number)
 	if not root or player.Parent ~= Players then
 		return
 	end
-	local result = DefenseJudge.judge(history(player), impactTime, attack.unparryable, Combat)
+	local result = DefenseJudge.judge(history(player), impactTime, attack.unparryable, Combat, attack.parryWindow)
 	local taken = 0
 	if result == "Parried" then
 		if attack.poiseOnParry > 0 then

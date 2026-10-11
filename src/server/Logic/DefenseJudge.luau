@@ -27,11 +27,12 @@ function DefenseJudge.accept(history, kind: string, pressTime: number, receivedA
 end
 
 -- Returns "Parried" | "PerfectDodge" | "Dodged" | "Hit". Only claims made before impact count.
-function DefenseJudge.judge(history, impactTime: number, unparryable: boolean, Combat): string
+-- parryWindow: the attack's own window in seconds (default Combat.parryWindow).
+function DefenseJudge.judge(history, impactTime: number, unparryable: boolean, Combat, parryWindow: number?): string
 	local parried, perfect, dodged = false, false, false
 	for _, t in history.Parry do
 		local d = impactTime - t
-		if d >= 0 and d <= Combat.parryWindow then
+		if d >= 0 and d <= (parryWindow or Combat.parryWindow) then
 			parried = true
 		end
 	end

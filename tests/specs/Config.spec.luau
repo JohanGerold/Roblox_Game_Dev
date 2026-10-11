@@ -199,4 +199,36 @@ return {
 	["fists are free"] = function(expect, mods)
 		expect.eq(cfg(mods, "Weapons").Fists.price, 0)
 	end,
+	["every attack has the new fields"] = function(expect, mods)
+		local targeting = { Self = true, Player = true, Wave = true }
+		for id, boss in cfg(mods, "Bosses") do
+			for _, attack in boss.attacks do
+				local name = id .. " " .. attack.id
+				expect.truthy(targeting[attack.targeting], name .. " targeting")
+				expect.truthy(type(attack.parryWindow) == "number" and attack.parryWindow > 0, name .. " parryWindow")
+				expect.truthy(type(attack.cooldown) == "number" and attack.cooldown >= 0, name .. " cooldown")
+				expect.truthy(type(attack.vfx) == "string" and #attack.vfx > 0, name .. " vfx")
+				expect.eq(type(attack.danger), "boolean", name .. " danger")
+			end
+		end
+	end,
+	["every gogo attack is parryable"] = function(expect, mods)
+		for _, attack in cfg(mods, "Bosses").Boss_Lofy.attacks do
+			expect.eq(attack.unparryable, false, attack.id)
+		end
+	end,
+	["wave attacks have speed and start radius"] = function(expect, mods)
+		for _, attack in cfg(mods, "Bosses").Boss_Lofy.attacks do
+			if attack.targeting == "Wave" then
+				expect.truthy(attack.waveSpeed > 0, attack.id .. " speed")
+				expect.truthy(attack.waveStartRadius > 0, attack.id .. " start radius")
+			end
+		end
+	end,
+	["gogo is the stage 1 boss"] = function(expect, mods)
+		local boss = cfg(mods, "Bosses").Boss_Lofy
+		expect.eq(boss.displayName, "Gogo")
+		expect.eq(boss.model, "Boss_Gogo")
+		expect.eq(boss.vfxFolder, "Gogo")
+	end,
 }

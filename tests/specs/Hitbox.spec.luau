@@ -32,4 +32,12 @@ return {
 			Hitbox.contains({ shape = "Triangle" }, origin, Vector3.zero)
 		end)
 	end,
+	["circle uses flat distance and height"] = function(expect, mods)
+		local Hitbox = require(mods.Logic.Hitbox)
+		local circle = { shape = "Circle", radius = 7, height = 10 }
+		expect.truthy(Hitbox.contains(circle, origin, Vector3.new(6, 6, 0)))
+		expect.eq(Hitbox.contains(circle, origin, Vector3.new(0, 11, 0)), false, "too high")
+		expect.eq(Hitbox.contains(circle, origin, Vector3.new(5, 0, 5)), false, "flat 7.07")
+		expect.truthy(Hitbox.contains(circle, origin, Vector3.new(4.9, -9, 4.9)))
+	end,
 }

@@ -71,4 +71,11 @@ return {
 		local DJ, Combat = load(mods)
 		expect.eq(DJ.judge(DJ.newHistory(), IMPACT, false, Combat), "Hit")
 	end,
+	["per-attack parry window"] = function(expect, mods)
+		local DJ, Combat = load(mods)
+		local h = DJ.newHistory()
+		DJ.accept(h, "Parry", 99.7, 99.75, Combat)
+		expect.eq(DJ.judge(h, IMPACT, false, Combat), "Hit")
+		expect.eq(DJ.judge(h, IMPACT, false, Combat, 0.35), "Parried")
+	end,
 }

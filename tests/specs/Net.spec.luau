@@ -58,7 +58,8 @@ return {
 	["boss state travels as attributes, attacks carry the boss id"] = function(expect, mods)
 		local S = require(mods.Shared.NetSchema)
 		expect.eq(S.definitions.BossState, nil)
-		expect.eq(#S.definitions.BossAttack.args, 3)
+		expect.eq(#S.definitions.BossAttack.args, 4)
+		expect.eq(S.definitions.BossAttack.args[4], "table?") -- optional payload: locked circle centre or wave data
 	end,
 	["limiter allows up to max then blocks"] = function(expect, mods)
 		local L = require(mods.Shared.Util.RateLimiter).new(3, 1)

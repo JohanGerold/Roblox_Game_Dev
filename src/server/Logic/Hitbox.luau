@@ -17,6 +17,10 @@ function Hitbox.contains(hitbox, origin: CFrame, point: Vector3): boolean
 		local look = Vector3.new(origin.LookVector.X, 0, origin.LookVector.Z).Unit
 		local cosAngle = math.clamp(look:Dot(flat.Unit), -1, 1)
 		return math.deg(math.acos(cosAngle)) <= hitbox.angle / 2
+	elseif shape == "Circle" then
+		-- flat (XZ) distance, with a height limit so jumping does not dodge it
+		local flat = Vector3.new(point.X - origin.Position.X, 0, point.Z - origin.Position.Z)
+		return flat.Magnitude <= hitbox.radius and math.abs(point.Y - origin.Position.Y) <= hitbox.height
 	elseif shape == "Box" then
 		local local_ = origin:PointToObjectSpace(point)
 		local half = hitbox.size / 2
