@@ -97,6 +97,8 @@ tags: [planning, decisions]
 
 - **Build step 9 choices (2026-10-11):** every ranked participant rolls for armor (never a piece they own) and for a moveset copy; copied moves are abilities on keys 1-4 with server-checked cooldowns; the weapon shop needs you within 15 studs; buying never auto-equips; boss-set slots by rebirth wait for a second boss.
 
+- **Build step 10 choices (2026-10-11):** one speed point is +1 walk speed (cap 60); training needs you at a station and re-checks every second, and stops when you carry an egg; carry speed is walk speed times the egg slowdown; rebirth costs $1M x 5^n, works while carrying, needs a second click on the panel.
+
 ## 20. Raid rewards only on kill
 
 - **Decision (2026-10-10):** if the raid boss isn't defeated, nobody gets any reward.

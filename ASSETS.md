@@ -40,6 +40,16 @@ Design: `docs/specs/2026-10-11-gogo-attacks-design.md`.
 - **Animations:** asset ids go in `Config/Bosses` (`animations = { idle, move, stagger, death }`, plus `anim` on each attack). The hit moment of an attack animation must line up with the end of that attack's warning (`windup`).
 - Missing pieces fall back to placeholder shapes, so deliver them one at a time.
 
+**Where an `Impact` is placed and which way it faces:**
+- Slam and Sweep (attacks around the boss): at the boss's ground position, rotated with the boss's facing. Forward is the model's **-Z**, so a Sweep swipe effect should point toward -Z of its PrimaryPart and be about 22 studs long.
+- Ground Fire: at the locked circle centre, no rotation (it is a point on the ground).
+- Flame Wave: once at the boss's position when the wave is released, no rotation. The expanding ring is drawn by the code.
+- All Impact emitters are enabled by the code and the clone is removed after 2 s.
+
+**Delivered so far (Gogo):** `Assets.Bosses.Boss_Gogo`; `Assets.VFX.Gogo.GroundFire` (Marker, Impact), `.Slam` (Marker, Impact), `.FlameWave` (Impact). Sweep has no art yet (the code draws a placeholder cone).
+
+**Stage scenery (all under `Workspace.Scenery`, script-free, anchored, no collision):** `GogoArena`, `Corridor`, `Gate`, `DomainOutskirts`, `Home`. Add new areas as new child folders and list them here.
+
 ## 3. Animations
 
 Upload each animation under the project's account, then give the code side the asset ID and which action it is for. The ID goes into config, never into a script. Character animation names already planned: `walkAnim` in `Config/Characters` (`Walk_Default`, `Walk_Serious`).
