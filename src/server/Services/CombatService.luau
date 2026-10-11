@@ -5,12 +5,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
 local Armor = require(ReplicatedStorage.Shared.Config.Armor)
+local Bosses = require(ReplicatedStorage.Shared.Config.Bosses)
 local Combat = require(ReplicatedStorage.Shared.Config.Combat)
 local Carry = require(ReplicatedStorage.Shared.Config.Carry)
+local Moves = require(ReplicatedStorage.Shared.Config.Moves)
 local Progression = require(ReplicatedStorage.Shared.Config.Progression)
 local Weapons = require(ReplicatedStorage.Shared.Config.Weapons)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Logic = script.Parent.Parent.Logic
+local AbilityRules = require(Logic.AbilityRules)
 local ComboCheck = require(Logic.ComboCheck)
 local DamageCalc = require(Logic.DamageCalc)
 local DefenseJudge = require(Logic.DefenseJudge)
@@ -23,6 +26,7 @@ local CombatService = {}
 local histories: { [Player]: any } = {}
 local combos: { [Player]: any } = {}
 local counterUntil: { [Player]: number } = {}
+local abilityUsedAt: { [Player]: { [number]: number } } = {}
 
 local hitResult, damageNumbers
 
@@ -106,6 +110,29 @@ local function onAttack(player: Player, comboIndex: number, weaponId: string)
 	end
 end
 
+-- A copied boss move on slot 1-4: same reach check and damage formula as a weapon hit. A swing that
+-- misses still spends the cooldown.
+local function onUseAbility(player: Player, slot: number)
+	local data = DataService:Get(player)
+	local root = aliveRoot(player)
+	if not data or not root then
+		return
+	end
+	local set = data.equippedBossSet
+	local used = abilityUsedAt[player] or {}
+	abilityUsedAt[player] = used
+	local ok, _, moveId = AbilityRules.canUse(slot, set, set and data.bossMoves[set] or 0, used[slot], now(), Bosses, Moves, Combat)
+	if not ok then
+		return
+	end
+	used[slot] = now()
+	local move = Moves[moveId]
+	local boss = bossInReach(root.Position, move.range + Combat.rangeTolerance)
+	if boss then
+		strike(player, boss, move.damage, data)
+	end
+end
+
 local function onDefend(player: Player, kind: string, pressTime: number)
 	DefenseJudge.accept(history(player), kind, pressTime, now(), Combat)
 end
@@ -158,6 +185,7 @@ function CombatService:Start()
 	Net.Server("Attack"):On(onAttack)
 	Net.Server("Defend"):On(onDefend)
 	Net.Server("Counter"):On(onCounter)
+	Net.Server("UseAbility"):On(onUseAbility)
 
 	BossService.Impact:Connect(function(boss, attack, victims, impactTime)
 		task.delay(Combat.judgeDelay, function()
@@ -173,6 +201,7 @@ function CombatService:Start()
 	Players.PlayerRemoving:Connect(function(player)
 		histories[player] = nil
 		combos[player] = nil
+		abilityUsedAt[player] = nil
 		counterUntil[player] = nil
 	end)
 end
