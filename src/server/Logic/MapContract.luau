@@ -90,6 +90,16 @@ function MapContract.check(root: Instance, map): { string }
 		table.insert(problems, string.format("Map: expected 1 WeaponShop, found %d", shops))
 	end
 
+	for _, tag in { "HomeZone", "SpeedSign" } do
+		local n = #tagged(root, tag)
+		if n ~= 1 then
+			table.insert(problems, string.format("Map: expected 1 %s, found %d", tag, n))
+		end
+	end
+	if #tagged(root, "FieldEggSpawn") < 1 then
+		table.insert(problems, "Map: expected at least 1 FieldEggSpawn, found 0")
+	end
+
 	table.sort(problems)
 	return problems
 end

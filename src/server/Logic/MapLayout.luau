@@ -1,16 +1,17 @@
 -- Pure layout math for the graybox map. Takes the Config/Map table, returns CFrames.
 local MapLayout = {}
 
-local function onRing(radius: number, degrees: number): CFrame
-	local rad = math.rad(degrees)
-	local pos = Vector3.new(radius * math.cos(rad), 0, radius * math.sin(rad))
-	return CFrame.lookAt(pos, Vector3.zero)
+-- Face the path (the X axis) from a point.
+local function facingPath(pos: Vector3): CFrame
+	return CFrame.lookAt(pos, Vector3.new(pos.X, 0, 0))
 end
 
-function MapLayout.baseCFrames(map): { CFrame }
+function MapLayout.plotCFrames(map): { CFrame }
 	local result = {}
 	for i = 1, map.baseCount do
-		result[i] = onRing(map.baseRingRadius, (i - 1) * 360 / map.baseCount)
+		local col = (i - 1) % map.plotsPerRow
+		local z = if i <= map.plotsPerRow then -map.plotRowOffset else map.plotRowOffset
+		result[i] = facingPath(Vector3.new(map.plotFirstX + col * map.plotSpacing, 0, z))
 	end
 	return result
 end
@@ -29,6 +30,14 @@ function MapLayout.slotOffsets(map): { Vector3 }
 	return result
 end
 
+-- A station on the centre line (|z| < 1) faces +X; the others face the path.
+local function stationCFrame(pos: Vector3): CFrame
+	if math.abs(pos.Z) < 1 then
+		return CFrame.lookAt(pos, pos + Vector3.xAxis)
+	end
+	return facingPath(pos)
+end
+
 local function row(center: CFrame, count: number, spread: number): { CFrame }
 	local result = {}
 	for i = 1, count do
@@ -38,13 +47,25 @@ local function row(center: CFrame, count: number, spread: number): { CFrame }
 end
 
 function MapLayout.stationCFrames(map)
-	local a, r = map.stationAngles, map.stationRadius
+	local s = map.stations
 	return {
-		WeaponShop = onRing(r, a.WeaponShop),
-		HubSpawn = onRing(r, a.HubSpawn),
-		Treadmill = row(onRing(r, a.Treadmill), map.treadmillCount, map.stationSpread),
-		Sandbag = row(onRing(r, a.Sandbag), map.sandbagCount, map.stationSpread),
+		HubSpawn = stationCFrame(s.HubSpawn),
+		WeaponShop = stationCFrame(s.WeaponShop),
+		FuseMachine = stationCFrame(s.FuseMachine),
+		Treadmill = row(stationCFrame(s.Treadmill), map.treadmillCount, map.stationSpread),
+		Sandbag = row(stationCFrame(s.Sandbag), map.sandbagCount, map.stationSpread),
 	}
+end
+
+-- Evenly spaced points on a circle around the arena centre, first at angle 0.
+function MapLayout.fieldEggSpawns(map): { Vector3 }
+	local result = {}
+	local n = map.fieldEggSpawnCount
+	for i = 1, n do
+		local a = (i - 1) * 2 * math.pi / n
+		table.insert(result, map.arenaCenter + Vector3.new(map.fieldEggRingRadius * math.cos(a), 0, map.fieldEggRingRadius * math.sin(a)))
+	end
+	return result
 end
 
 return MapLayout

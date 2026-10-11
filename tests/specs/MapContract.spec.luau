@@ -35,6 +35,9 @@ local function makeMap(): Folder
 	part(root, "Treadmill")
 	part(root, "Sandbag")
 	part(root, "WeaponShop")
+	part(root, "HomeZone")
+	part(root, "SpeedSign")
+	part(root, "FieldEggSpawn")
 	return root
 end
 
@@ -115,5 +118,29 @@ return {
 		local problems = check(root, CONFIG)
 		root:Destroy()
 		expect.truthy(contains(problems, "Map: expected 1 WeaponShop, found 0"), table.concat(problems, "; "))
+	end,
+	["missing HomeZone is reported"] = function(expect, mods)
+		local check = require(mods.Logic.MapContract).check
+		local root = makeMap()
+		firstTagged(root, "HomeZone"):Destroy()
+		local problems = check(root, CONFIG)
+		root:Destroy()
+		expect.truthy(contains(problems, "Map: expected 1 HomeZone, found 0"), table.concat(problems, "; "))
+	end,
+	["two SpeedSigns are reported"] = function(expect, mods)
+		local check = require(mods.Logic.MapContract).check
+		local root = makeMap()
+		part(root, "SpeedSign")
+		local problems = check(root, CONFIG)
+		root:Destroy()
+		expect.truthy(contains(problems, "Map: expected 1 SpeedSign, found 2"), table.concat(problems, "; "))
+	end,
+	["no FieldEggSpawn is reported"] = function(expect, mods)
+		local check = require(mods.Logic.MapContract).check
+		local root = makeMap()
+		firstTagged(root, "FieldEggSpawn"):Destroy()
+		local problems = check(root, CONFIG)
+		root:Destroy()
+		expect.truthy(contains(problems, "Map: expected at least 1 FieldEggSpawn, found 0"), table.concat(problems, "; "))
 	end,
 }
