@@ -95,6 +95,8 @@ tags: [planning, decisions]
 
 - **Build step 8 choices (2026-10-11):** stands deal damage once a second only while their owner is in the arena, alive and not carrying an egg, and only while the boss is in a normal fight; rebirth damage bonus applies to stands; every player sees every fighting team (placeholder blocks).
 
+- **Build step 9 choices (2026-10-11):** every ranked participant rolls for armor (never a piece they own) and for a moveset copy; copied moves are abilities on keys 1-4 with server-checked cooldowns; the weapon shop needs you within 15 studs; buying never auto-equips; boss-set slots by rebirth wait for a second boss.
+
 ## 20. Raid rewards only on kill
 
 - **Decision (2026-10-10):** if the raid boss isn't defeated, nobody gets any reward.
