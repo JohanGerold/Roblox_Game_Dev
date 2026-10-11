@@ -46,7 +46,7 @@ Design: `docs/specs/2026-10-11-gogo-attacks-design.md`.
 - Flame Wave: once at the boss's position when the wave is released, no rotation. The expanding ring is drawn by the code.
 - All Impact emitters are enabled by the code and the clone is removed after 2 s.
 
-**Delivered so far (Gogo):** `Assets.Bosses.Boss_Gogo`; `Assets.VFX.Gogo.GroundFire` (Marker, Impact), `.Slam` (Marker, Impact), `.FlameWave` (Impact). Sweep has no art yet (the code draws a placeholder cone).
+**Delivered so far (Gogo):** `Assets.Bosses.Boss_Gogo`; `Assets.VFX.Gogo.GroundFire` (Marker, Impact), `.Slam` (Marker, Impact), `.FlameWave` (Impact), `.Sweep` (Impact only; the code keeps drawing the cone marker).
 
 **Stage scenery (all under `Workspace.Scenery`, script-free, anchored, no collision):** `GogoArena`, `Corridor`, `Gate`, `DomainOutskirts`, `Home`. Add new areas as new child folders and list them here.
 
