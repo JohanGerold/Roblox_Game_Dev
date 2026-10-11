@@ -231,4 +231,10 @@ return {
 		expect.eq(boss.model, "Boss_Gogo")
 		expect.eq(boss.vfxFolder, "Gogo")
 	end,
+	["training values"] = function(expect, mods)
+		local T = cfg(mods, "Training")
+		expect.eq(T.trainRange, 6)
+		expect.eq(T.tickSeconds, 1)
+		expect.truthy(T.baseWalkSpeed < T.maxWalkSpeed)
+	end,
 }
