@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Bosses = require(ReplicatedStorage.Shared.Config.Bosses)
 local Map = require(ReplicatedStorage.Shared.Config.Map)
 
 local player = Players.LocalPlayer
@@ -94,7 +95,8 @@ function BossHudController:Start()
 		end
 		local maxHp = math.max(1, shown:GetAttribute("MaxHp") or 1)
 		local maxPoise = math.max(1, shown:GetAttribute("MaxPoise") or 1)
-		name.Text = tostring(shown:GetAttribute("BossId"))
+		local bossCfg = Bosses[shown:GetAttribute("BossId")]
+		name.Text = bossCfg and bossCfg.displayName or tostring(shown:GetAttribute("BossId"))
 		hpFill.Size = UDim2.fromScale(math.clamp((shown:GetAttribute("Hp") or 0) / maxHp, 0, 1), 1)
 		poiseFill.Size = UDim2.fromScale(math.clamp((shown:GetAttribute("Poise") or 0) / maxPoise, 0, 1), 1)
 		local enraged = shown:GetAttribute("Enraged") == true

@@ -163,19 +163,25 @@ end
 
 local STAND_NUMBER_COLOR = Color3.fromRGB(90, 220, 255)
 
-local function onBossAttack(bossId: string, attackId: string, impactTime: number)
+local function onBossAttack(bossId: string, attackId: string, impactTime: number, payload)
 	local cfg = Bosses[bossId]
 	local model = findBossModel(bossId)
 	if not cfg or not model then
 		return
 	end
 	if attackId == "Catch" then
-		CombatFx.telegraph({ shape = "Sphere", radius = cfg.catchRange + cfg.bodyRadius }, model, impactTime)
+		local area = { targeting = "Self", hitbox = { shape = "Sphere", radius = cfg.catchRange + cfg.bodyRadius } }
+		CombatFx.telegraph(area, model, impactTime, {})
 		return
 	end
+	local settings = DataController:Get("settings")
 	for _, attack in cfg.attacks do
 		if attack.id == attackId then
-			CombatFx.telegraph(attack.hitbox, model, impactTime)
+			CombatFx.telegraph(attack, model, impactTime, {
+				payload = payload,
+				vfxFolder = cfg.vfxFolder,
+				fewerEffects = settings ~= nil and settings.fewerEffects == true,
+			})
 			return
 		end
 	end

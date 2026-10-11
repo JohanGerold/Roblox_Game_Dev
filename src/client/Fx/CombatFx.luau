@@ -2,14 +2,55 @@
 -- the server decides every outcome. Real effects replace these in build step 12.
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+
+local WaveTiming = require(ReplicatedStorage.Shared.Util.WaveTiming)
 
 local CombatFx = {}
 
 local TELEGRAPH_COLOR = Color3.fromRGB(255, 40, 40)
 local FLAT = 0.2
 
+local RING_COLOR = Color3.fromRGB(255, 200, 80)
+local RING_WIDTH = 1.2
+local RING_START_SCALE = 2 -- the timing ring starts at this many times the marker radius
+
 local popupGui: ScreenGui?
+
+-- Assets.VFX.<vfxFolder>.<vfx>.<name> if Astra's art exists, else nil (placeholders are used).
+local function vfxTemplate(vfxFolder: string?, vfx: string?, name: string): Instance?
+	local assets = ReplicatedStorage:FindFirstChild("Assets")
+	local root = assets and assets:FindFirstChild("VFX")
+	local folder = root and vfxFolder and root:FindFirstChild(vfxFolder)
+	local attackFolder = folder and vfx and folder:FindFirstChild(vfx)
+	return attackFolder and attackFolder:FindFirstChild(name)
+end
+
+-- A flat ring on the ground: a CylinderHandleAdornment (it has an inner radius) on an invisible anchor part.
+local function makeRing(center: Vector3, radius: number): (Part, CylinderHandleAdornment)
+	local anchor = Instance.new("Part")
+	anchor.Transparency = 1
+	anchor.Size = Vector3.new(0.2, 0.2, 0.2)
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.CFrame = CFrame.new(center)
+	anchor.Parent = workspace
+	local ring = Instance.new("CylinderHandleAdornment")
+	ring.Adornee = anchor
+	ring.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+	ring.Height = 0.3
+	ring.Radius = radius
+	ring.InnerRadius = math.max(0, radius - RING_WIDTH)
+	ring.Color3 = RING_COLOR
+	ring.Transparency = 0.15
+	ring.ZIndex = 1
+	ring.Parent = anchor
+	return anchor, ring
+end
 
 local function getGui(): ScreenGui
 	if popupGui and popupGui.Parent then
@@ -65,52 +106,174 @@ function CombatFx.popup(text: string, color: Color3)
 	Debris:AddItem(label, 1.1)
 end
 
--- Red ground marker shaped like the hitbox that fills in until impact. Cones are drawn as a box
--- covering the cone's width. Removed early if the boss is staggered.
-function CombatFx.telegraph(hitbox, bossModel: Model, impactTime: number)
+-- Ground warnings for a boss attack (spec: gogo-attacks section 5). Visual only; the server judges everything.
+--   Slam / Ground Fire: a filled marker plus a ring that shrinks onto the marker edge at impact.
+--   Sweep (cone) and boxes: the filled marker only.
+--   Flame Wave: a ring on the ground drawn at its true radius as it grows.
+-- Real art replaces the placeholders by name: Assets.VFX.<vfxFolder>.<attack.vfx>.Marker / .Impact (ASSETS.md 2a).
+-- options = { payload: table?, vfxFolder: string?, fewerEffects: boolean? }. Everything is removed at impact, or
+-- early when the boss is staggered, dies or goes enraged.
+function CombatFx.telegraph(attack, bossModel: Model, impactTime: number, options)
+	options = options or {}
+	local payload = options.payload
+	local hitbox = attack.hitbox
+	local startedAt = workspace:GetServerTimeNow()
+	local duration = math.max(0.05, impactTime - startedAt)
+
 	local pivot = bossModel:GetPivot()
 	local boxCf, boxSize = bossModel:GetBoundingBox()
 	local groundY = boxCf.Position.Y - boxSize.Y / 2 + 0.15
-	local origin = CFrame.new(pivot.X, groundY, pivot.Z) * (pivot - pivot.Position)
+	local bossOrigin = CFrame.new(pivot.X, groundY, pivot.Z) * (pivot - pivot.Position)
 
-	local marker = Instance.new("Part")
-	if hitbox.shape == "Sphere" then
-		marker.Shape = Enum.PartType.Cylinder
-		marker.Size = Vector3.new(FLAT, hitbox.radius * 2, hitbox.radius * 2)
-		marker.CFrame = origin * CFrame.Angles(0, 0, math.rad(90))
-	elseif hitbox.shape == "Cone" then
-		local width = 2 * hitbox.range * math.sin(math.rad(math.min(hitbox.angle, 180) / 2))
-		marker.Size = Vector3.new(width, FLAT, hitbox.range)
-		marker.CFrame = origin * CFrame.new(0, 0, -hitbox.range / 2)
-	else
-		marker.Size = Vector3.new(hitbox.size.X, FLAT, hitbox.size.Z)
-		marker.CFrame = origin
-	end
-	marker.Material = Enum.Material.Neon
-	marker.Color = TELEGRAPH_COLOR
-	marker.Transparency = 0.85
-	marker.Anchored = true
-	marker.CanCollide = false
-	marker.CanQuery = false
-	marker.CanTouch = false
-	marker.Parent = workspace
-
-	local duration = math.max(0.05, impactTime - workspace:GetServerTimeNow())
-	TweenService:Create(marker, TweenInfo.new(duration), { Transparency = 0.4 }):Play()
-
-	local connection
-	local function remove()
-		if connection then
+	local made: { Instance } = {}
+	local connections: { RBXScriptConnection } = {}
+	local finished = false
+	local function finish()
+		if finished then
+			return
+		end
+		finished = true
+		for _, connection in connections do
 			connection:Disconnect()
 		end
-		marker:Destroy()
-	end
-	connection = bossModel:GetAttributeChangedSignal("State"):Connect(function()
-		if bossModel:GetAttribute("State") == "Staggered" then
-			remove()
+		for _, instance in made do
+			instance:Destroy()
 		end
-	end)
-	task.delay(duration, remove)
+	end
+	local function track(instance: Instance): Instance
+		table.insert(made, instance)
+		return instance
+	end
+
+	local function playImpact(at: CFrame)
+		if options.fewerEffects then
+			return
+		end
+		local impact = vfxTemplate(options.vfxFolder, attack.vfx, "Impact")
+		if not impact then
+			return
+		end
+		local clone = impact:Clone()
+		if clone:IsA("Model") then
+			clone:PivotTo(at)
+		elseif clone:IsA("BasePart") then
+			clone.CFrame = at
+		end
+		clone.Parent = workspace
+		for _, d in clone:GetDescendants() do
+			if d:IsA("ParticleEmitter") then
+				d.Enabled = true
+			end
+		end
+		Debris:AddItem(clone, 2)
+	end
+
+	-- the filled marker (placeholder part, or Astra's 1 x 1 Marker scaled to the area)
+	local function fill(size: Vector3, cf: CFrame, round: boolean)
+		local custom = vfxTemplate(options.vfxFolder, attack.vfx, "Marker")
+		local marker: BasePart
+		if custom then
+			local clone = custom:Clone()
+			local part = clone:IsA("Model") and clone.PrimaryPart or clone
+			if not part or not part:IsA("BasePart") then
+				clone:Destroy()
+				custom = nil
+			else
+				part.Size = Vector3.new(size.X, part.Size.Y, size.Z)
+				if clone:IsA("Model") then
+					clone:PivotTo(cf)
+				else
+					part.CFrame = cf
+				end
+				for _, d in clone:GetDescendants() do
+					if d:IsA("BasePart") then
+						d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch = true, false, false, false
+					end
+				end
+				part.Anchored, part.CanCollide, part.CanQuery, part.CanTouch = true, false, false, false
+				clone.Parent = workspace
+				track(clone)
+				return
+			end
+		end
+		marker = Instance.new("Part")
+		if round then
+			marker.Shape = Enum.PartType.Cylinder
+			marker.Size = Vector3.new(FLAT, size.X, size.Z)
+			marker.CFrame = cf * CFrame.Angles(0, 0, math.rad(90))
+		else
+			marker.Size = Vector3.new(size.X, FLAT, size.Z)
+			marker.CFrame = cf
+		end
+		marker.Material = Enum.Material.Neon
+		marker.Color = TELEGRAPH_COLOR
+		marker.Transparency = 0.85
+		marker.Anchored = true
+		marker.CanCollide = false
+		marker.CanQuery = false
+		marker.CanTouch = false
+		marker.Parent = workspace
+		track(marker)
+		TweenService:Create(marker, TweenInfo.new(duration), { Transparency = 0.4 }):Play()
+	end
+
+	if attack.targeting == "Wave" and payload then
+		local center = Vector3.new(payload.x, groundY, payload.z)
+		local anchor, ring = makeRing(center, payload.startRadius)
+		track(anchor)
+		local wave = { waveStartRadius = payload.startRadius, waveSpeed = payload.speed }
+		table.insert(connections, RunService.Heartbeat:Connect(function()
+			local radius = WaveTiming.radiusAt(workspace:GetServerTimeNow(), impactTime, wave, payload.maxRadius)
+			ring.Radius = radius
+			ring.InnerRadius = math.max(0, radius - RING_WIDTH)
+			if radius >= payload.maxRadius then
+				finish()
+			end
+		end))
+		task.delay(duration, function()
+			if not finished then
+				playImpact(CFrame.new(center))
+			end
+		end)
+	else
+		local center = bossOrigin
+		local radius
+		if hitbox.shape == "Sphere" or hitbox.shape == "Circle" then
+			radius = payload and payload.radius or hitbox.radius
+			if payload then
+				center = CFrame.new(payload.x, groundY, payload.z)
+			end
+			fill(Vector3.new(radius * 2, FLAT, radius * 2), center, true)
+		elseif hitbox.shape == "Cone" then
+			local width = 2 * hitbox.range * math.sin(math.rad(math.min(hitbox.angle, 180) / 2))
+			fill(Vector3.new(width, FLAT, hitbox.range), center * CFrame.new(0, 0, -hitbox.range / 2), false)
+		else
+			fill(Vector3.new(hitbox.size.X, FLAT, hitbox.size.Z), center, false)
+		end
+		if radius then
+			local anchor, ring = makeRing(center.Position, radius * RING_START_SCALE)
+			track(anchor)
+			table.insert(connections, RunService.Heartbeat:Connect(function()
+				local alpha = math.clamp((workspace:GetServerTimeNow() - startedAt) / duration, 0, 1)
+				local r = radius * RING_START_SCALE + (radius - radius * RING_START_SCALE) * alpha
+				ring.Radius = r
+				ring.InnerRadius = math.max(0, r - RING_WIDTH)
+			end))
+		end
+		task.delay(duration, function()
+			if not finished then
+				playImpact(center)
+				finish()
+			end
+		end)
+	end
+
+	table.insert(connections, bossModel:GetAttributeChangedSignal("State"):Connect(function()
+		local state = bossModel:GetAttribute("State")
+		if state == "Staggered" or state == "Dead" or state == "Guard" then
+			finish()
+		end
+	end))
 end
 
 function CombatFx.damageNumber(position: Vector3, amount: number, staggered: boolean, color: Color3?)
