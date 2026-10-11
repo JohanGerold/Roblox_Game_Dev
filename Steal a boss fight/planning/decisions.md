@@ -131,4 +131,10 @@ Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-ch
 - The current placeholder names (`Boss_Lofy`, `Lofy_*`, `Zoru_*`, `Narto_*`, `Gokku_*`) were only examples from decision 1 and get replaced by stage 1 names. Saved ids stay stable: the boss keeps id `Boss_Lofy` until a data migration renames it; only `model`, `displayName` and moves change.
 - Visual production is done by a second AI (Astra) following [ASSETS.md](../../ASSETS.md); code by Claude.
 
+## 23. Stage 1 roster and the stage roadmap
+
+- **Decision (2026-10-11):** stage 1 has 16 stands: the Tokyo first-years, the Kyoto school, Yaga, Gakuganji, Inumaki, Panda, Hanami and blindfolded Gojo, all renamed. Utahime is a **team buffer** and Hanami a **healer**; their mechanics get their own spec. Full table: [stage 1 roster](../../docs/specs/2026-10-11-stage1-roster-design.md).
+- **Not in stage 1:** Gojo with eyes revealed, Sukuna, Hakari, Yuta.
+- **Roadmap (post-V1):** a set number of rebirths moves the player to a new dimension: start over in the next stage, with new bosses, new and stronger stands. Stage 2: boss Mahito with the Shibuya cast. Stage 3 (final): boss Sukuna with the final-form cast, including Hakari (copy-based luck passive: 1 copy gives one random auto-dodge, max copies give 3 dodges and 1 revive) and Yuta.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)
