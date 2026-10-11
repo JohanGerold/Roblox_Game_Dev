@@ -203,6 +203,31 @@ function CarryService:Drop(player: Player, reason: string)
 	broadcast(egg, "Free")
 end
 
+-- Everyone currently carrying an egg.
+function CarryService:GetCarriers(): { Player }
+	local list = {}
+	for player in carriers do
+		table.insert(list, player)
+	end
+	return list
+end
+
+-- The boss caught a carrier: the egg goes back to where it first lay. False when they carry nothing.
+function CarryService:ReturnToSpawn(player: Player, reason: string): boolean
+	local carry = carriers[player]
+	if not carry then
+		return false
+	end
+	local egg = carry.egg
+	CarryService:Drop(player, reason)
+	egg.part.CFrame = CFrame.new(egg.spawnPos)
+	if egg.kind == "Giant" then
+		broadcast(egg, "Returned")
+		broadcast(egg, "Free")
+	end
+	return true
+end
+
 function CarryService:TryPickUp(player: Player, eggId: string): (boolean, string?)
 	local egg = eggs[eggId]
 	local humanoid, root = aliveParts(player)

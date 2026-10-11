@@ -14,6 +14,8 @@ local BossBrain = require(Logic.BossBrain)
 local ArenaCheck = require(Logic.ArenaCheck)
 local Combat = require(ReplicatedStorage.Shared.Config.Combat)
 local Hitbox = require(Logic.Hitbox)
+local ChaseNav = require(Logic.ChaseNav)
+local ZoneCheck = require(Logic.ZoneCheck)
 
 local ATTRIBUTE_INTERVAL = 0.1
 local PLACEHOLDER_SIZE = Vector3.new(8, 12, 8)
@@ -121,7 +123,16 @@ local function setDeadVisual(rec, dead: boolean)
 	end
 end
 
+local function clearRage(rec)
+	if rec.rage then
+		rec.rage:Destroy()
+		rec.rage = nil
+	end
+	rec.model:SetAttribute("Enraged", nil)
+end
+
 local function resetBoss(rec)
+	clearRage(rec)
 	BossBrain.reset(rec.brain, now())
 	setDeadVisual(rec, false)
 	rec.diedAt = nil
@@ -152,6 +163,74 @@ local function onDeath(rec)
 	BossService.Defeated:Fire(rec.id, ledger)
 end
 
+-- The revived boss: full HP, immune, red glow; it guards the eggs instead of fighting.
+local function enterGuard(rec, t: number)
+	BossBrain.enterGuard(rec.brain, t)
+	setDeadVisual(rec, false)
+	rec.diedAt = nil
+	rec.emptySince = nil
+	place(rec, rec.home, rec.home + rec.facing.LookVector)
+	local glow = Instance.new("Highlight")
+	glow.FillColor = Color3.fromRGB(255, 40, 40)
+	glow.FillTransparency = 0.6
+	glow.Adornee = rec.model
+	glow.Parent = rec.model
+	rec.rage = glow
+	rec.model:SetAttribute("Enraged", true)
+	setAttributes(rec)
+end
+
+-- Nearest carrier (any egg) who is outside the home zone.
+local function chaseTarget(rec)
+	local CarryService = require(script.Parent.CarryService)
+	local zone
+	for _, d in CollectionService:GetTagged("HomeZone") do
+		if d:IsA("BasePart") then
+			zone = d
+			break
+		end
+	end
+	local best, bestDist
+	for _, player in CarryService:GetCarriers() do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if humanoid and root and humanoid.Health > 0 and not (zone and ZoneCheck.inside(zone.CFrame, zone.Size, root.Position)) then
+			local d = (flat(root.Position) - flat(rec.pos)).Magnitude
+			if not bestDist or d < bestDist then
+				best, bestDist = { player = player, humanoid = humanoid, root = root }, d
+			end
+		end
+	end
+	return best
+end
+
+local function stepGuard(rec, dt: number, t: number)
+	local cfg = rec.cfg
+	if t >= rec.brain.stateEndsAt then
+		resetBoss(rec)
+		return
+	end
+	local target = chaseTarget(rec)
+	local goal = ChaseNav.goal(rec.pos, target and target.root.Position or rec.home, Map, cfg.bodyRadius)
+	local offset = flat(goal) - flat(rec.pos)
+	if offset.Magnitude > 0.3 then
+		local stepped = rec.pos + offset.Unit * math.min(cfg.chaseSpeed * dt, offset.Magnitude)
+		local newPos = ChaseNav.clamp(stepped, Map, cfg.bodyRadius)
+		place(rec, Vector3.new(newPos.X, rec.pos.Y, newPos.Z), goal)
+	end
+	if target and BossService:DistanceToBody(rec, target.root.Position) <= cfg.catchRange then
+		local health = target.humanoid.Health
+		target.humanoid.Health = math.min(health, math.max(1, health - cfg.catchDamage))
+		require(script.Parent.CarryService):ReturnToSpawn(target.player, "caught")
+		require(script.Parent.AnnounceService):All("The boss took back " .. target.player.DisplayName .. "'s egg!", "Legendary")
+		bossAttackRemote:FireAll(rec.id, "Catch", t)
+	end
+	if os.clock() >= rec.nextAttr then
+		setAttributes(rec)
+	end
+end
+
 local function step(rec, dt: number)
 	local brain = rec.brain
 	local cfg = rec.cfg
@@ -163,8 +242,13 @@ local function step(rec, dt: number)
 
 	if brain.state == "Dead" then
 		if t - rec.diedAt >= cfg.reviveSeconds then
-			resetBoss(rec)
+			enterGuard(rec, t)
 		end
+		return
+	end
+
+	if brain.state == "Guard" then
+		stepGuard(rec, dt, t)
 		return
 	end
 

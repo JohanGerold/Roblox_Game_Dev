@@ -97,7 +97,10 @@ function BossHudController:Start()
 		name.Text = tostring(shown:GetAttribute("BossId"))
 		hpFill.Size = UDim2.fromScale(math.clamp((shown:GetAttribute("Hp") or 0) / maxHp, 0, 1), 1)
 		poiseFill.Size = UDim2.fromScale(math.clamp((shown:GetAttribute("Poise") or 0) / maxPoise, 0, 1), 1)
-		stagger.Visible = shown:GetAttribute("State") == "Staggered"
+		local enraged = shown:GetAttribute("Enraged") == true
+		stagger.Text = enraged and "ENRAGED" or "STAGGERED"
+		stagger.TextColor3 = enraged and Color3.fromRGB(255, 70, 70) or Color3.fromRGB(255, 220, 60)
+		stagger.Visible = enraged or shown:GetAttribute("State") == "Staggered"
 	end)
 end
 

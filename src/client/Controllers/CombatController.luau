@@ -167,6 +167,10 @@ local function onBossAttack(bossId: string, attackId: string, impactTime: number
 	if not cfg or not model then
 		return
 	end
+	if attackId == "Catch" then
+		CombatFx.telegraph({ shape = "Sphere", radius = cfg.catchRange + cfg.bodyRadius }, model, impactTime)
+		return
+	end
 	for _, attack in cfg.attacks do
 		if attack.id == attackId then
 			CombatFx.telegraph(attack.hitbox, model, impactTime)
