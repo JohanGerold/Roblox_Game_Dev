@@ -10,7 +10,7 @@ tags: [planning, questions]
 - **Rarity tiers**: exact list and odds for normal vs giant eggs.
 - **Giant egg edge cases**: carrier leaves, time limit, team escorts. See [The Big Egg](../design/big-egg.md).
 - **Day/night**: what does night actually change?
-- **First anime world**: which anime is stage 1, and which boss?
+- ~~**First anime world**: which anime is stage 1, and which boss?~~ Settled: see [Decisions Log](decisions.md#22-stage-1-is-jujutsu-kaisen-boss-gogo).
 - **Art pipeline**: learn Blender, buy, or commission? See [Learning Path](learning-path.md).
 - **Can players steal stands from bases?** Currently only the giant egg is stealable.
 - **PvP**: arena only, or open-world?

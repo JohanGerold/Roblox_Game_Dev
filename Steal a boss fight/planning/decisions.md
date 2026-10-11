@@ -123,4 +123,10 @@ Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-ch
 - **D14** Cross-server raids are post-V1.
 - **D15** The chase stops at night.
 
+## 22. Stage 1 is Jujutsu Kaisen, boss Gogo
+
+- **Decision (2026-10-11):** stage 1 (the cursed domain) uses Jujutsu Kaisen characters with changed names, per decision 1. The boss is **Gogo, the Mountain Head Yokai** (renamed Jogo): volcanic, single-eye design, original model.
+- The current placeholder names (`Boss_Lofy`, `Lofy_*`, `Zoru_*`, `Narto_*`, `Gokku_*`) were only examples from decision 1 and get replaced by stage 1 names. Saved ids stay stable: the boss keeps id `Boss_Lofy` until a data migration renames it; only `model`, `displayName` and moves change.
+- Visual production is done by a second AI (Astra) following [ASSETS.md](../../ASSETS.md); code by Claude.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)
