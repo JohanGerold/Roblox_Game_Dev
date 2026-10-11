@@ -20,4 +20,6 @@ return {
 	dodgeDashSpeed = 60,
 	dodgeDashSeconds = 0.2,
 	arenaTolerance = 5,
+	standTickSeconds = 1, -- the stand team deals damage once per tick
+	standDamageFactor = 1, -- tuning knob for stand damage against player damage
 }

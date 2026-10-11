@@ -164,4 +164,9 @@ return {
 	["catch damage leaves room to survive"] = function(expect, mods)
 		expect.truthy(cfg(mods, "Bosses").Boss_Lofy.catchDamage < 100)
 	end,
+	["stand tick values"] = function(expect, mods)
+		local C = cfg(mods, "Combat")
+		expect.eq(C.standTickSeconds, 1)
+		expect.eq(C.standDamageFactor, 1)
+	end,
 }
