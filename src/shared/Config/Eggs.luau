@@ -23,4 +23,19 @@ return {
 		color = Color3.fromRGB(255, 205, 60),
 		odds = { Legendary = 40, Mythic = 45, Celestial = 15 },
 	},
+	Field_Small = {
+		displayName = "Field Egg",
+		hatchSeconds = 30,
+		carryFactor = 0.95,
+		color = Color3.fromRGB(150, 230, 120),
+		odds = { Common = 60, Rare = 25, Epic = 12, Legendary = 3 },
+	},
+	Field_Shiny = {
+		displayName = "Shiny Egg",
+		hatchSeconds = 45,
+		carryFactor = 0.85,
+		color = Color3.fromRGB(120, 230, 255),
+		glow = true,
+		odds = { Rare = 40, Epic = 35, Legendary = 20, Mythic = 5 },
+	},
 }

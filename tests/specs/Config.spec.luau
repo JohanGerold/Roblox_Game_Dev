@@ -128,4 +128,28 @@ return {
 		local K, M = cfg(mods, "Carry"), cfg(mods, "Map")
 		expect.truthy(K.personalRingRadius + K.personalSize < M.giantEggOffset.Magnitude - 5)
 	end,
+	["rounds config matches the spec"] = function(expect, mods)
+		local R, E = cfg(mods, "Rounds"), cfg(mods, "Eggs")
+		expect.eq(R.daySeconds, 240)
+		expect.eq(R.nightSeconds, 45)
+		expect.eq(R.fieldEggs.smallExtra, 2)
+		expect.eq(R.fieldEggs.shinyChance, 0.10)
+		expect.eq(R.fieldEggs.giantChance, 0.25)
+		for _, key in { "small", "shiny", "giant" } do
+			expect.truthy(E[R.fieldEggs[key]], "egg for " .. key)
+		end
+	end,
+	["field eggs are lighter than the giant"] = function(expect, mods)
+		local E = cfg(mods, "Eggs")
+		expect.eq(E.Field_Small.carryFactor, 0.95)
+		expect.eq(E.Field_Shiny.carryFactor, 0.85)
+	end,
+	["both lighting presets set every key"] = function(expect, mods)
+		local R = cfg(mods, "Rounds")
+		for _, phase in { "Day", "Night" } do
+			for _, key in { "ClockTime", "Ambient", "OutdoorAmbient", "Density", "Color", "Decay", "Haze", "Glare" } do
+				expect.truthy(R.lighting[phase][key] ~= nil, phase .. " " .. key)
+			end
+		end
+	end,
 }
