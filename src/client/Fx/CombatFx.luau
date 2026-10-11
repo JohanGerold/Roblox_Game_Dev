@@ -113,7 +113,7 @@ function CombatFx.telegraph(hitbox, bossModel: Model, impactTime: number)
 	task.delay(duration, remove)
 end
 
-function CombatFx.damageNumber(position: Vector3, amount: number, staggered: boolean)
+function CombatFx.damageNumber(position: Vector3, amount: number, staggered: boolean, color: Color3?)
 	local anchor = Instance.new("Part")
 	anchor.Transparency = 1
 	anchor.Size = Vector3.new(0.1, 0.1, 0.1)
@@ -135,7 +135,7 @@ function CombatFx.damageNumber(position: Vector3, amount: number, staggered: boo
 	label.BackgroundTransparency = 1
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = staggered and 30 or 24
-	label.TextColor3 = staggered and Color3.fromRGB(255, 220, 60) or Color3.fromRGB(255, 255, 255)
+	label.TextColor3 = color or (staggered and Color3.fromRGB(255, 220, 60) or Color3.fromRGB(255, 255, 255))
 	label.TextStrokeTransparency = 0.3
 	label.Text = tostring(math.floor(amount + 0.5))
 	label.Parent = billboard

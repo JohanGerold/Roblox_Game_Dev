@@ -161,6 +161,8 @@ local function findBossModel(bossId: string): Model?
 	return nil
 end
 
+local STAND_NUMBER_COLOR = Color3.fromRGB(90, 220, 255)
+
 local function onBossAttack(bossId: string, attackId: string, impactTime: number)
 	local cfg = Bosses[bossId]
 	local model = findBossModel(bossId)
@@ -199,7 +201,7 @@ function CombatController:Start()
 	Net.Client("HitResult"):On(onHitResult)
 	Net.Client("BossAttack"):On(onBossAttack)
 	Net.Client("DamageNumbers"):On(function(info)
-		CombatFx.damageNumber(Vector3.new(info.x, info.y, info.z), info.amount, info.staggered)
+		CombatFx.damageNumber(Vector3.new(info.x, info.y, info.z), info.amount, info.staggered, info.stand and STAND_NUMBER_COLOR or nil)
 	end)
 	player.CharacterAdded:Connect(function()
 		comboIndex, comboTime = 0, nil

@@ -1,8 +1,9 @@
--- Stands panel: your stands (best first) with Place / Store and Upgrade buttons.
+-- Stands panel: your stands (best first) with Place / Store, Team and Upgrade buttons.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Characters = require(ReplicatedStorage.Shared.Config.Characters)
 local Economy = require(ReplicatedStorage.Shared.Config.Economy)
+local Progression = require(ReplicatedStorage.Shared.Config.Progression)
 local Rarities = require(ReplicatedStorage.Shared.Config.Rarities)
 local Net = require(ReplicatedStorage.Shared.Net)
 local Format = require(ReplicatedStorage.Shared.Util.Format)
@@ -17,6 +18,7 @@ local StandsController = {}
 
 local list: ScrollingFrame
 local emptyLabel: TextLabel
+local titleLabel: TextLabel
 local upgradeButtons: { { button: TextButton, cost: number } } = {}
 
 local function firstFreeSlot(): number?
@@ -32,6 +34,29 @@ local function firstFreeSlot(): number?
 		end
 	end
 	return nil
+end
+
+-- Same numbers as the server's TeamRules.slots.
+local function teamSlots(): number
+	local rebirths = DataController:Get("rebirths") or 0
+	local slots = Progression.baseTeamSlots
+	for _, atRebirths in Progression.extraTeamSlotAtRebirths do
+		if rebirths >= atRebirths then
+			slots += 1
+		end
+	end
+	return slots
+end
+
+local function currentTeam(): { string }
+	local team = {}
+	local characters = DataController:Get("characters") or {}
+	for _, uid in DataController:Get("standTeam") or {} do
+		if characters[uid] then
+			table.insert(team, uid)
+		end
+	end
+	return team
 end
 
 local function colorUpgradeButtons()
@@ -66,6 +91,9 @@ local function rebuild()
 		return a.uid < b.uid
 	end)
 	emptyLabel.Visible = #sorted == 0
+	local team = currentTeam()
+	local slots = teamSlots()
+	titleLabel.Text = string.format("Stands   Team %d/%d", #team, slots)
 
 	for order, entry in sorted do
 		local stand, cfg = entry.stand, entry.cfg
@@ -113,6 +141,28 @@ local function rebuild()
 				HudController:Toast("All base slots full. Store a stand first.", Widgets.colors.text)
 			end
 		end)
+		local teamIndex = table.find(team, entry.uid)
+		Widgets.button({
+			Parent = row,
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -166, 0, 4),
+			Size = UDim2.fromOffset(80, 22),
+			Text = teamIndex and "Team \u{2713}" or "Team",
+			TextSize = 14,
+			BackgroundColor3 = teamIndex and Widgets.colors.good or Widgets.colors.accent,
+		}, function()
+			local newTeam = currentTeam()
+			local index = table.find(newTeam, entry.uid)
+			if index then
+				table.remove(newTeam, index)
+			elseif #newTeam >= slots then
+				HudController:Toast(string.format("Team is full (%d). Remove a stand first.", slots), Widgets.colors.text)
+				return
+			else
+				table.insert(newTeam, entry.uid)
+			end
+			Net.Client("SetTeam"):Fire(newTeam)
+		end)
 		local cost = Income.upgradeCost(stand.id, stand.level, Characters, Economy)
 		if cost then
 			local button = Widgets.button({
@@ -136,9 +186,9 @@ function StandsController:Init()
 		Name = "StandsPanel",
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(0, 148, 0.5, 0),
-		Size = UDim2.fromOffset(380, 420),
+		Size = UDim2.fromOffset(470, 420),
 	})
-	Widgets.label({
+	titleLabel = Widgets.label({
 		Parent = panel,
 		Position = UDim2.fromOffset(12, 8),
 		Size = UDim2.new(1, -24, 0, 30),
@@ -166,7 +216,7 @@ function StandsController:Start()
 	DataController:WaitForData()
 	rebuild()
 	DataController.Changed:Connect(function(key)
-		if key == "characters" or key == "baseSlots" then
+		if key == "characters" or key == "baseSlots" or key == "standTeam" or key == "rebirths" then
 			rebuild()
 		elseif key == "money" then
 			colorUpgradeButtons()
