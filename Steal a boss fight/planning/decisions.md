@@ -105,6 +105,7 @@ Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-ch
 - **D2** Every egg is carried home, personal rank eggs included (delivered to your plot's pad).
 - **D3** Carry speed = your walk speed x the egg's slowdown (Normal 0.9, Top 0.8, Giant 0.6).
 - **D4** The boss revives enraged 3 s after dying and chases the nearest carrier outside home; a catch costs 20 HP (never lethal) and sends the egg back (Plan C).
+- **Plan C choices:** the revived boss starts a fresh fight after its 60 s guard (full HP, empty damage list); every carrier outside home is chased, nearest first; the boss never enters home and routes through the gate; the gate sign lists every egg (Field 22, Egg 23, Shiny 24, Top 25, Giant 34).
 - **D5** The home area is safe; the boss never enters.
 - **D6** A sign at the domain gate shows the speed needed to outrun the boss with each egg (Plan C).
 - **D7** One egg at a time.
