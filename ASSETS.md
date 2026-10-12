@@ -18,7 +18,7 @@ Names must match the config exactly. A missing model is not an error: the game d
 | Model | Put it at | Name comes from |
 |---|---|---|
 | Boss | `ReplicatedStorage.Assets.Bosses.<model>` | `Config/Bosses` field `model` (now `Boss_Lofy`) |
-| Stand (character) | `ReplicatedStorage.Assets.Characters.<model>` | `Config/Characters` field `model` (`Lofy_Base`, `Zoru_Base`, `Narto_Base`, `Gokku_Base`, `Gokku_Red`, `Gokku_Blue`) |
+| Stand (character) | `ReplicatedStorage.Assets.Characters.<model>` | `Config/Characters` field `model` (equals the id; the 16 stage 1 stands are listed in `handoffs/2026-10-12-claude-to-astra-stage1-roster.md`) |
 
 Rules for these models:
 - One `Model` with a `PrimaryPart`. Bosses should stand on y = 0 at their origin.
@@ -26,7 +26,7 @@ Rules for these models:
 - Stands are shown at a base slot (about 5 x 5 studs of floor). Keep them roughly 3 x 5 x 2 studs, like the placeholder.
 - **No Scripts, LocalScripts or ModuleScripts inside any model.** Remove them from toolbox and generated models. Never `require(assetId)` or `loadstring`.
 
-**No asset slot yet** (the code needs a small hook first; ask before building these): eggs and the giant egg, stands drawn during combat, weapons (`Config/Weapons.model`: `Fists`, `Stick`, `Katana`), armor (`Lofy_Hat`), effects other than boss attacks (2a), sounds, icons. Plan the art, but tell the code side the model name and where it goes.
+**No asset slot yet** (the code needs a small hook first; ask before building these): eggs and the giant egg, stands drawn during combat, weapons (`Config/Weapons.model`: `Fists`, `Stick`, `Katana`), armor (`Gogo_AshCrown`), effects other than boss attacks (2a), sounds, icons. Plan the art, but tell the code side the model name and where it goes.
 
 ## 2a. Boss attack effects and animations
 

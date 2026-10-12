@@ -11,21 +11,21 @@ local function damage(mods, team, characters, rebirths)
 end
 
 return {
-	["one level-1 Lofy deals 1"] = function(expect, mods)
-		expect.near(damage(mods, { "c1" }, { c1 = { id = "Lofy_Base", level = 1 } }, 0), 1, 1e-9)
+	["one level-1 Yuju deals 1"] = function(expect, mods)
+		expect.near(damage(mods, { "c1" }, { c1 = { id = "Yuju_Base", level = 1 } }, 0), 1, 1e-9)
 	end,
 	["level scaling"] = function(expect, mods)
-		expect.near(damage(mods, { "c1" }, { c1 = { id = "Zoru_Base", level = 3 } }, 0), 6 * 1.3 ^ 2, 1e-6)
+		expect.near(damage(mods, { "c1" }, { c1 = { id = "Nobaru_Base", level = 3 } }, 0), 6 * 1.3 ^ 2, 1e-6)
 	end,
 	["team sums"] = function(expect, mods)
-		local chars = { c1 = { id = "Lofy_Base", level = 1 }, c2 = { id = "Zoru_Base", level = 1 } }
+		local chars = { c1 = { id = "Yuju_Base", level = 1 }, c2 = { id = "Nobaru_Base", level = 1 } }
 		expect.near(damage(mods, { "c1", "c2" }, chars, 0), 7, 1e-9)
 	end,
 	["rebirths multiply"] = function(expect, mods)
-		expect.near(damage(mods, { "c1" }, { c1 = { id = "Lofy_Base", level = 1 } }, 2), 1.5, 1e-9)
+		expect.near(damage(mods, { "c1" }, { c1 = { id = "Yuju_Base", level = 1 } }, 2), 1.5, 1e-9)
 	end,
 	["missing, duplicate and unknown entries"] = function(expect, mods)
-		expect.near(damage(mods, { "c1", "c1", "gone" }, { c1 = { id = "Lofy_Base", level = 1 } }, 0), 1, 1e-9)
+		expect.near(damage(mods, { "c1", "c1", "gone" }, { c1 = { id = "Yuju_Base", level = 1 } }, 0), 1, 1e-9)
 		expect.eq(damage(mods, { "c1" }, { c1 = { id = "Nope", level = 1 } }, 0), 0)
 	end,
 	["empty team deals 0"] = function(expect, mods)
@@ -35,7 +35,7 @@ return {
 		local SD, Ch, E, P, Co = load(mods)
 		local combat = table.clone(Co)
 		combat.standDamageFactor = 0.05
-		local value = SD.perTick({ "c1" }, { c1 = { id = "Gokku_Red", level = 1 } }, 0, Ch, E, P, combat)
+		local value = SD.perTick({ "c1" }, { c1 = { id = "Toudo_Base", level = 1 } }, 0, Ch, E, P, combat)
 		expect.near(value, 1500 * 0.05, 1e-9)
 	end,
 }

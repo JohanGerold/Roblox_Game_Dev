@@ -19,6 +19,6 @@ return {
 	end,
 	["armor bonus sums and ignores unknown ids"] = function(expect, mods)
 		local DamageCalc, _, _, Armor = load(mods)
-		expect.near(DamageCalc.armorBonus({ head = "Lofy_Hat", body = "Nope" }, Armor), 0.05, 1e-6)
+		expect.near(DamageCalc.armorBonus({ head = "Gogo_AshCrown", body = "Nope" }, Armor), 0.05, 1e-6)
 	end,
 }

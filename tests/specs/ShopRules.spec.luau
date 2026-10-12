@@ -42,7 +42,7 @@ return {
 	end,
 	["equip owned armor"] = function(expect, mods)
 		local Rules, W, A = load(mods)
-		expect.eq((Rules.canEquip("armor", "Lofy_Hat", { weapons = { owned = { "Fists" } }, armor = { owned = { "Lofy_Hat" } } }, W, A)), true)
+		expect.eq((Rules.canEquip("armor", "Gogo_AshCrown", { weapons = { owned = { "Fists" } }, armor = { owned = { "Gogo_AshCrown" } } }, W, A)), true)
 	end,
 	["bad kind and unknown id"] = function(expect, mods)
 		local Rules, W, A = load(mods)

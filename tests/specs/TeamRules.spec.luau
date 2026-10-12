@@ -2,7 +2,7 @@ local function load(mods)
 	return require(mods.Logic.TeamRules), require(mods.Shared.Config.Progression)
 end
 
-local CHARS = { c1 = { id = "Lofy_Base", level = 1 }, c2 = { id = "Zoru_Base", level = 1 }, c3 = { id = "Narto_Base", level = 1 }, c4 = { id = "Gokku_Base", level = 1 } }
+local CHARS = { c1 = { id = "Yuju_Base", level = 1 }, c2 = { id = "Nobaru_Base", level = 1 }, c3 = { id = "Megumu_Base", level = 1 }, c4 = { id = "Mechamaro_Base", level = 1 } }
 
 return {
 	["slots grow with rebirths"] = function(expect, mods)

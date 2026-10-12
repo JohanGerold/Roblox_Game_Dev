@@ -22,7 +22,7 @@ return {
 	["armor drops below the chance"] = function(expect, mods)
 		local Roll, drops = load(mods)
 		local result = Roll.roll(drops, {}, 0, 4, fakeRng({ 0.1, 0.9 }, { 1 }))
-		expect.eq(result.armorId, "Lofy_Hat")
+		expect.eq(result.armorId, "Gogo_AshCrown")
 		expect.eq(result.moveCopy, false)
 	end,
 	["no armor above the chance"] = function(expect, mods)
@@ -32,7 +32,7 @@ return {
 	["owned pieces are never dropped"] = function(expect, mods)
 		local Roll, drops = load(mods)
 		local rng = fakeRng({ 0.0, 0.9 }, {})
-		expect.eq(Roll.roll(drops, { "Lofy_Hat" }, 0, 4, rng).armorId, nil)
+		expect.eq(Roll.roll(drops, { "Gogo_AshCrown" }, 0, 4, rng).armorId, nil)
 		expect.eq(rng.integerCalls, 0)
 	end,
 	["move copy below the chance"] = function(expect, mods)
@@ -52,7 +52,7 @@ return {
 	["a real rng gives the right shape"] = function(expect, mods)
 		local Roll, drops = load(mods)
 		local result = Roll.roll(drops, {}, 0, 4, Random.new(1))
-		expect.truthy(result.armorId == nil or result.armorId == "Lofy_Hat")
+		expect.truthy(result.armorId == nil or result.armorId == "Gogo_AshCrown")
 		expect.eq(type(result.moveCopy), "boolean")
 	end,
 }

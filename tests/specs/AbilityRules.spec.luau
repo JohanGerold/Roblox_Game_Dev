@@ -24,7 +24,7 @@ return {
 		local ok, reason, moveId = Rules.canUse(1, "Boss_Lofy", 1, nil, 100, B, M, Co)
 		expect.eq(ok, true)
 		expect.eq(reason, nil)
-		expect.eq(moveId, "Lofy_Punch")
+		expect.eq(moveId, "Gogo_MagmaFist")
 	end,
 	["cooldown with tolerance"] = function(expect, mods)
 		local Rules, B, M, Co = load(mods)

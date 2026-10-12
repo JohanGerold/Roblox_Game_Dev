@@ -4,8 +4,8 @@ end
 
 local function stands()
 	return {
-		a = { id = "Lofy_Base", level = 1, slot = nil },
-		b = { id = "Zoru_Base", level = 1, slot = 1 },
+		a = { id = "Yuju_Base", level = 1, slot = nil },
+		b = { id = "Nobaru_Base", level = 1, slot = 1 },
 	}
 end
 
@@ -51,12 +51,12 @@ return {
 	["firstFreeSlot finds the lowest free unlocked slot"] = function(expect, mods)
 		local StandPlace = load(mods)
 		local s = {
-			a = { id = "Lofy_Base", level = 1, slot = 1 },
-			b = { id = "Lofy_Base", level = 1, slot = 3 },
+			a = { id = "Yuju_Base", level = 1, slot = 1 },
+			b = { id = "Yuju_Base", level = 1, slot = 3 },
 		}
 		expect.eq(StandPlace.firstFreeSlot(s, 4), 2)
-		s.c = { id = "Lofy_Base", level = 1, slot = 2 }
-		s.d = { id = "Lofy_Base", level = 1, slot = 4 }
+		s.c = { id = "Yuju_Base", level = 1, slot = 2 }
+		s.d = { id = "Yuju_Base", level = 1, slot = 4 }
 		expect.eq(StandPlace.firstFreeSlot(s, 4), nil)
 	end,
 }

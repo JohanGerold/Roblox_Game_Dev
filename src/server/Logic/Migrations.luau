@@ -2,8 +2,48 @@ local DataTemplate = require(script.Parent.DataTemplate)
 
 local Migrations = {}
 
--- steps[n] upgrades a save from version n to n + 1. None yet (version 1 is the first layout).
-local steps: { [number]: (data: { [string]: any }) -> () } = {}
+-- Stage 1 roster rename (version 1 -> 2): placeholder stand and armor ids become the Jujutsu Kaisen ones.
+local STAND_RENAMES = {
+	Lofy_Base = "Yuju_Base",
+	Zoru_Base = "Nobaru_Base",
+	Narto_Base = "Megumu_Base",
+	Gokku_Base = "Mechamaro_Base",
+	Gokku_Red = "Toudo_Base",
+	Gokku_Blue = "Gojou_Blindfold",
+}
+local ARMOR_RENAMES = {
+	Lofy_Hat = "Gogo_AshCrown",
+}
+
+-- steps[n] upgrades a save from version n to n + 1 (version 1 is the first layout).
+local steps: { [number]: (data: { [string]: any }) -> () } = {
+	[1] = function(data)
+		if type(data.characters) == "table" then
+			for _, stand in data.characters do
+				if type(stand) == "table" and STAND_RENAMES[stand.id] then
+					stand.id = STAND_RENAMES[stand.id]
+				end
+			end
+		end
+		local armor = data.armor
+		if type(armor) == "table" then
+			if type(armor.owned) == "table" then
+				for i, id in armor.owned do
+					if ARMOR_RENAMES[id] then
+						armor.owned[i] = ARMOR_RENAMES[id]
+					end
+				end
+			end
+			if type(armor.equipped) == "table" then
+				for slot, id in armor.equipped do
+					if ARMOR_RENAMES[id] then
+						armor.equipped[slot] = ARMOR_RENAMES[id]
+					end
+				end
+			end
+		end
+	end,
+}
 
 local function isArray(t: { [any]: any }): boolean
 	return t[1] ~= nil

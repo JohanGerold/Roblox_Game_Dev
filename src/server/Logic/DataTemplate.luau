@@ -1,7 +1,7 @@
 -- Player save layout (spec section 6). Saves store ids only; stats come from config.
 local DataTemplate = {}
 
-DataTemplate.CURRENT_VERSION = 1
+DataTemplate.CURRENT_VERSION = 2
 
 function DataTemplate.new(): { [string]: any }
 	return {

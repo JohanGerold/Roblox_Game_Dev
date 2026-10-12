@@ -111,7 +111,7 @@ return {
 	["Equip kind must be weapon or armor"] = function(expect, mods)
 		local S = require(mods.Shared.NetSchema)
 		expect.eq((S.validate("Equip", { "weapon", "Katana" })), true)
-		expect.eq((S.validate("Equip", { "armor", "Lofy_Hat" })), true)
+		expect.eq((S.validate("Equip", { "armor", "Gogo_AshCrown" })), true)
 		expect.eq((S.validate("Equip", { "hat", "x" })), false)
 	end,
 	["PlaceStand slot must be 1 to 16 when given"] = function(expect, mods)

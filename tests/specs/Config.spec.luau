@@ -26,6 +26,36 @@ return {
 			expect.truthy(R.byName[ch.rarity], id .. " has unknown rarity " .. tostring(ch.rarity))
 		end
 	end,
+	["stage 1 roster has 16 stands with matching models and per-rarity stats"] = function(expect, mods)
+		local C = cfg(mods, "Characters")
+		local count = 0
+		local byRarity = {}
+		for id, ch in C do
+			count += 1
+			expect.eq(ch.model, id, id)
+			local first = byRarity[ch.rarity]
+			if first then
+				expect.eq(ch.baseIncome, first.baseIncome, id)
+				expect.eq(ch.basePower, first.basePower, id)
+			else
+				byRarity[ch.rarity] = ch
+			end
+		end
+		expect.eq(count, 16)
+		expect.eq(C.Utahame_Base.role, "buffer")
+		expect.eq(C.Hanamo_Base.role, "healer")
+	end,
+	["boss drops and moves exist in config"] = function(expect, mods)
+		local B, M, A = cfg(mods, "Bosses"), cfg(mods, "Moves"), cfg(mods, "Armor")
+		for bossId, boss in B do
+			for _, moveId in boss.playerMoves or {} do
+				expect.truthy(M[moveId], bossId .. " move " .. moveId)
+			end
+			for _, armorId in (boss.drops and boss.drops.armorPieces) or {} do
+				expect.truthy(A[armorId], bossId .. " armor " .. armorId)
+			end
+		end
+	end,
 	["every egg odds key is a rarity with weight above zero"] = function(expect, mods)
 		local R, E = cfg(mods, "Rarities"), cfg(mods, "Eggs")
 		for id, egg in E do

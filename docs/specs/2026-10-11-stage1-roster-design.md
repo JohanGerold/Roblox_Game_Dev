@@ -57,8 +57,9 @@ Level, slot and team membership are kept. Unknown ids are left as they are, and 
 
 ## 3. Other One Piece leftovers to rename (same follow-up)
 
-- **Boss moves** copied from Gogo still have One Piece names: `Lofy_Punch` "Rubber Punch", `Lofy_Stretch`, `Lofy_Barrage`, `Lofy_Ultimate` "Giant Fist". They become Gogo-themed volcanic moves. Names are to be agreed; saved copies are counted per boss, so no save change is needed beyond the move ids in config.
-- **Armor:** `Lofy_Hat` "Straw Hat" becomes a Gogo piece. Its id is saved in `armor.owned` and `armor.equipped`, so it is part of the same migration.
+- **Boss moves** (done 2026-10-12): `Lofy_Punch` / `Lofy_Stretch` / `Lofy_Barrage` / `Lofy_Ultimate` became `Gogo_MagmaFist` "Magma Fist", `Gogo_EmberLash` "Ember Lash", `Gogo_CinderBarrage` "Cinder Barrage", `Gogo_Eruption` "Eruption". Saved copies are counted per boss, so no save change was needed.
+- **Armor** (done): `Lofy_Hat` "Straw Hat" became `Gogo_AshCrown` "Ash Crown", migrated in `armor.owned` and `armor.equipped`.
+- The boss id `Boss_Lofy` is unchanged (saves reference it as the `bossMoves` key); renaming it needs its own migration.
 
 ## 4. Later stages (roadmap, not V1)
 
@@ -75,5 +76,5 @@ Model the stage 1 stands at `ReplicatedStorage.Assets.Characters.<id>`, one per 
 
 ## 6. Open points
 
-1. **Gogo's move names and the armor piece** (section 3).
+1. ~~Gogo's move names and the armor piece~~ done (section 3).
 2. **Role mechanics** for Utahime and Hanami (own spec).

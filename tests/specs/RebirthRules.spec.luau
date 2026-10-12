@@ -22,7 +22,7 @@ return {
 			money = 5000000,
 			rebirths = 1,
 			training = { speed = 12, power = 3 },
-			characters = { c1 = { id = "Zoru_Base", level = 7, slot = 2 }, c2 = { id = "Lofy_Base", level = 3 } },
+			characters = { c1 = { id = "Nobaru_Base", level = 7, slot = 2 }, c2 = { id = "Yuju_Base", level = 3 } },
 		}
 		local result = Rules.apply(data)
 		expect.eq(result.money, 0)
@@ -31,7 +31,7 @@ return {
 		expect.eq(result.training.power, 0)
 		expect.eq(result.characters.c1.level, 1)
 		expect.eq(result.characters.c1.slot, 2)
-		expect.eq(result.characters.c1.id, "Zoru_Base")
+		expect.eq(result.characters.c1.id, "Nobaru_Base")
 		expect.eq(result.characters.c2.level, 1)
 		expect.eq(result.characters.c2.slot, nil)
 		expect.eq(data.characters.c1.level, 7, "input untouched")

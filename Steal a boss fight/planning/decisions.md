@@ -137,4 +137,6 @@ Full table in the [design spec](../../docs/specs/2026-10-11-strip-map-and-egg-ch
 - **Not in stage 1:** Gojo with eyes revealed, Sukuna, Hakari, Yuta.
 - **Roadmap (post-V1):** a set number of rebirths moves the player to a new dimension: start over in the next stage, with new bosses, new and stronger stands. Stage 2: boss Mahito with the Shibuya cast. Stage 3 (final): boss Sukuna with the final-form cast, including Hakari (copy-based luck passive: 1 copy gives one random auto-dodge, max copies give 3 dodges and 1 revive) and Yuta.
 
+- **Implemented (2026-10-12):** roster in config, save version 2 migration, Gogo moves renamed (Magma Fist, Ember Lash, Cinder Barrage, Eruption) and armor (Ash Crown). Boss id `Boss_Lofy` kept.
+
 Related: [Open Questions](open-questions.md), [Game Concept](../design/game-concept.md)
